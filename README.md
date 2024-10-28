@@ -7,7 +7,7 @@ Projekti eesmärk on luua veebirakendus Next.js abil, mis võimaldab kasutajatel
 
 ## Liikmed
 Hans Oskar Trolla
-
+Jan Markus Kähara
 
 
 
