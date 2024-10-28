@@ -1,3 +1,16 @@
+<h1 align="center">Perudo Palace</h1>
+
+Liar's Dice on strateegia- ja õnnemäng, kus mängijad peavad panustama täringute tulemustele, samal ajal proovides oma vastaseid üle kavaldada ja ära arvata, kas vastase väide on tõsi või vale. Mängus saavad mängijad veeretada täringuid, valida oma panused ja otsustada, kas vastase panus on aus või bluff. Mäng jätkub seni, kuni üks mängija kaotab kõik oma elud või täringud.
+
+Projekti eesmärk on luua veebirakendus Next.js abil, mis võimaldab kasutajatel liituda mänguga anonüümselt või konto kaudu, liituda mängutoaga, alustada mängu, bluffida ja otsustada, kas vastane bluffib. Mängu struktuur sisaldab nii kasutajaliidest kui ka taustal toimuvat mänguloogikat (näiteks täringu viskamine, käigu üleandmine, elude jälgimine jne), mida toetab reaalajatehnoloogia Socket.io.
+
+
+## Liikmed
+Hans Oskar Trolla
+
+
+
+
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
   <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
   <h1 align="center">Next.js and Supabase Starter Kit</h1>
