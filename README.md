@@ -38,15 +38,10 @@ extra kui on aega:
 - Jan Markus Kähara
 - Joosep Madar
 - Kaspar Makke
+
 ## Wireframe
 
 https://www.figma.com/design/INsg9oQ3mIeduXFhvEdgdk/Perudo-Palace?node-id=0-1&t=Flt0ytTLzANoQZfv-1
-
-## Liikmed
-
-- Hans Oskar Trolla
-- Jan Markus Kähara
-- Joosep Madar
 
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
   <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
