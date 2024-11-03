@@ -30,9 +30,10 @@ extra kui on aega:
 - vb login/kontod kuulub ka siia
 
 ## Liikmed
-Hans Oskar Trolla
-Jan Markus Kähara
-Joosep Madar
+- Hans Oskar Trolla
+- Jan Markus Kähara
+- Joosep Madar
+- Kaspar Makke
 
 
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
