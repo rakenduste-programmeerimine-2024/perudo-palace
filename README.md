@@ -5,7 +5,9 @@ Liar's Dice on strateegia- ja õnnemäng, kus mängijad peavad panustama täring
 Projekti eesmärk on luua veebirakendus Next.js abil, mis võimaldab kasutajatel liituda mänguga anonüümselt või konto kaudu, liituda mängutoaga, alustada mängu, bluffida ja otsustada, kas vastane bluffib. Mängu struktuur sisaldab nii kasutajaliidest kui ka taustal toimuvat mänguloogikat (näiteks täringu viskamine, käigu üleandmine, elude jälgimine jne), mida toetab reaalajatehnoloogia Socket.io.
 
 ## Funktsioonid umbes
+
 buttons:
+
 - login
 - enter username for anonymus join into lobby
 - join lobby
@@ -26,13 +28,19 @@ automatic, backend:
 - end connection to socket.io when exiting game/lobby
 
 extra kui on aega:
+
 - Textbox rääkimiseks
 - vb login/kontod kuulub ka siia
 
+## Wireframe
+https://www.figma.com/design/INsg9oQ3mIeduXFhvEdgdk/Perudo-Palace?node-id=0-1&t=Flt0ytTLzANoQZfv-1
+
 ## Liikmed
-Hans Oskar Trolla
-Jan Markus Kähara
-Joosep Madar
+- Hans Oskar Trolla
+- Jan Markus Kähara
+- Joosep Madar
+- Kaspar Makke
+
 
 
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
