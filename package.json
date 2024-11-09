@@ -1,9 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"node app/backend/server.js\"",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "start-socket-server": "node app/backend/server.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -15,13 +16,16 @@
     "autoprefixer": "10.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "concurrently": "^9.1.0",
     "geist": "^1.2.1",
     "lucide-react": "^0.436.0",
     "next": "latest",
     "next-themes": "^0.3.0",
     "prettier": "^3.3.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "20.10.6",
