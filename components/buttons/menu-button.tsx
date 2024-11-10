@@ -9,15 +9,14 @@ interface MenuButtonProps {
 const MenuButton: React.FC<MenuButtonProps> = ({ title, href }) => {
     return (
         <Link href={href} className="
+            flex
             bg-gray-500 
             hover:bg-gray-600 
-            text-white 
-            shadow-lg
-            w-64 h-32 
+            text-white
+            w-64 h-20 
             items-center 
             justify-center
-            py-2 px-4 
-            rounded flex">
+            rounded">
             <button >
                 {title}
             </button>
