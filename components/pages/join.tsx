@@ -1,4 +1,5 @@
-//components/pages/join.tsx
+// components/pages/join.tsx
+import Link from 'next/link';
 import { TextField, Button } from '@mui/material';
 
 const Join: React.FC = () => {
@@ -18,14 +19,16 @@ const Join: React.FC = () => {
           fullWidth 
           className="bg-white rounded-md shadow"
         />
-        <Button 
-          variant="contained" 
-          color="primary" 
-          fullWidth 
-          className="mt-4"
-        >
-          Join Game
-        </Button>
+        <Link href="/game" passHref>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth 
+            className="mt-4"
+          >
+            Join Game
+          </Button>
+        </Link>
       </div>
     </div>
   );

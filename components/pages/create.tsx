@@ -1,4 +1,5 @@
-//components/pages/create.tsx
+// components/pages/create.tsx
+import Link from 'next/link';
 import { TextField, Button } from '@mui/material';
 
 const Create: React.FC = () => {
@@ -18,14 +19,16 @@ const Create: React.FC = () => {
           fullWidth 
           className="bg-white rounded-md shadow"
         />
-        <Button 
-          variant="contained" 
-          color="primary" 
-          fullWidth 
-          className="mt-4"
-        >
-          Create Game
-        </Button>
+        <Link href="/game" passHref>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth 
+            className="mt-4"
+          >
+            Create Game
+          </Button>
+        </Link>
       </div>
     </div>
   );
