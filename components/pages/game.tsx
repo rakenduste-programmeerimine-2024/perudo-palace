@@ -6,7 +6,7 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 
 const Game: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-400 relative">
+    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
       {/* Mängulaud */}
       <div className="relative w-[36rem] h-[24rem] bg-back-bg bg-cover bg-center rounded-full flex items-center justify-center">
         <Typography variant="h4" className="text-white font-bold">
@@ -45,14 +45,14 @@ const Game: React.FC = () => {
       </div>
 
       {/* Like ja Dislike nupud all vasakus nurgas */}
-<div className="absolute bottom-[10rem] left-[15rem] space-x-6 flex">
-  <IconButton color="primary" sx={{ fontSize: 40 }}>
-    <ThumbUpIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
-  </IconButton>
-  <IconButton color="secondary" sx={{ fontSize: 40 }}>
-    <ThumbDownIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
-  </IconButton>
-</div>
+      <div className="absolute bottom-[10rem] left-[15rem] space-x-6 flex">
+       <IconButton color="primary" sx={{ fontSize: 40 }}>
+       <ThumbUpIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
+       </IconButton>
+       <IconButton color="secondary" sx={{ fontSize: 40 }}>
+       <ThumbDownIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
+       </IconButton>
+      </div>
     </div>
   );
 };
