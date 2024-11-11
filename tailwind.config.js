@@ -8,7 +8,10 @@ module.exports = {
     extend: {
       backgroundImage: {
         'back-bg': "url('/image/background.jpg')",
-        'back2-bg': "url('/image/background1.png')",//selle pildi võiks välja vahetada
+        'smile-bg': "url('/image/smile.jpg')",
+        'smile2-bg': "url('/image/smile2.jpg')",
+        'smile3-bg': "url('/image/smil3.jpg')",
+        'smile4-bg': "url('/image/smil4.jpg')",
       },
     },
     backgroundSize: {
