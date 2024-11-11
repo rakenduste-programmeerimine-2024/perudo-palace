@@ -5,6 +5,12 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    extend: {
+      backgroundImage: {
+        'back-bg': "url('/image/background.jpg')",
+        'back2-bg': "url('/image/background1.png')",//selle pildi võiks välja vahetada
+      },
+    },
     backgroundSize: {
       'auto': 'auto',
       'cover': 'cover',

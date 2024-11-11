@@ -4,10 +4,10 @@ import { Button } from '@mui/material';
 
 const Lobby: React.FC = () => {
   return (
-    <div //h-screen (kõrgus) w-screen (laius, see muudab ka kastide suurust hetkel)
-    className="flex flex-col items-center justify-center min-h-screen w-screen bg-gradient-to-r from-cyan-500 to-blue-500"
+    <div 
+      className="flex flex-col items-center justify-center min-h-screen w-screen bg-back-bg bg-cover bg-center"
     >
-      <h1 className="text-3xl font-bold mb-6">Perudo Palace Lobby</h1>
+      <h1 className="text-3xl font-bold mb-6 text-white">Perudo Palace Lobby</h1>
       <div className="space-y-4 w-1/3">
         <Link href="/create" passHref>
           <Button 
