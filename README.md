@@ -20,7 +20,6 @@ buttons:
 - exit game
 
 automatic, backend:
-
 - turn passing over
 - lie/dice checker
 - dice rolling
