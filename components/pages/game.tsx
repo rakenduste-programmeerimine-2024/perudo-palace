@@ -12,16 +12,16 @@ const Game: React.FC = () => {
         
         {/* Players */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32">
-          <Player name="Player 4" bgImage="url('/image/smile6.jpg')" />
+          <Player name="Player 4" bgImage="url('/image/smile6.jpg')" hearts={3} />
         </div>
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-32">
-          <Player name="Player 3" bgImage="url('/image/smile5.jpg')" />
+          <Player name="Player 3" bgImage="url('/image/smile5.jpg')" hearts={3} />
         </div>
         <div className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-32">
-          <Player name="Player 2" bgImage="url('/image/smile2.jpg')" />
+          <Player name="Player 2" bgImage="url('/image/smile2.jpg')" hearts={3} />
         </div>
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-32">
-          <Player name="Player 1" bgImage="url('/image/smile.jpg')" />
+          <Player name="Player 1" bgImage="url('/image/smile.jpg')" hearts={3} />
         </div>
       </div>
 
@@ -57,19 +57,20 @@ const Game: React.FC = () => {
 interface PlayerProps {
   name: string;
   bgImage: string;
+  hearts: number; // Südamete arv
 }
 
-const Player: React.FC<PlayerProps> = ({ name, bgImage }) => {
+const Player: React.FC<PlayerProps> = ({ name, bgImage, hearts }) => {
   return (
     <div className="flex flex-col items-center space-y-2">
       {/* Südamed */}
       <div className="flex space-x-1">
-        <FavoriteIcon className="text-red-500" />
-        <FavoriteIcon className="text-red-500" />
-        <FavoriteIcon className="text-red-500" />
+        {Array.from({ length: hearts }).map((_, index) => (
+          <FavoriteIcon key={index} className="text-red-800" />
+        ))}
       </div>
       {/* Mängija avatar */}
-        <div
+      <div
         className="w-16 h-16 rounded-full"
         style={{
           backgroundImage: bgImage,
