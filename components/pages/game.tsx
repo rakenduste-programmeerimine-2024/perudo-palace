@@ -8,11 +8,8 @@ const Game: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
       {/* Mängulaud */}
-      <div className="relative w-[36rem] h-[24rem] bg-back-bg bg-cover bg-center rounded-full flex items-center justify-center">
-        <Typography variant="h4" className="text-white font-bold">
-          Mängulaud
-        </Typography>
-
+      <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
+        
         {/* Players */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32">
           <Player name="Player 4" bgImage="url('/image/smile6.jpg')" />
@@ -72,18 +69,15 @@ const Player: React.FC<PlayerProps> = ({ name, bgImage }) => {
         <FavoriteIcon className="text-red-500" />
       </div>
       {/* Mängija avatar */}
-      <Avatar
-        className="w-16 h-16"
-        sx={{
+        <div
+        className="w-16 h-16 rounded-full"
+        style={{
           backgroundImage: bgImage,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          //backgroundColor: "transparent" // Eemaldab vaikimisi tausta ja ikooni kuid ei tööta sedasi
-        }}//{name.charAt(0)} P kuvab nime esimese tähe
-        >
-          {name.charAt(0)}
-        </Avatar>
-
+          backgroundColor: "transparent",
+        }}
+      />
       {/* Mängija nimi */}
       <Typography variant="body1" className="font-semibold text-gray-700">
         {name}
