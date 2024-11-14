@@ -21,7 +21,7 @@ const Create: React.FC = () => {
           fullWidth 
           className="bg-white rounded-md shadow"
         />
-        <Link href="/game" passHref>
+        <Link href="/lobby" passHref>
           <Button 
             variant="contained" 
             color="primary" 
