@@ -10,6 +10,56 @@ const Game: React.FC = () => {
       {/* Mängulaud */}
       <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
         
+        {/*players Cups */}
+        <div
+          className="absolute"
+          style={{
+            top: '45%',
+            left: '10%',
+            width: '3rem',
+            height: '3rem',
+            backgroundImage: "url('/image/cup1.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+          }}
+        ></div>
+        <div
+          className="absolute"
+          style={{
+            top: '20%',
+            right: '47%',
+            width: '3rem',
+            height: '3rem',
+            backgroundImage: "url('/image/cup1.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+          }}
+        ></div>
+        <div
+          className="absolute"
+          style={{
+            bottom: '20%',
+            left: '47%',
+            width: '3rem',
+            height: '3rem',
+            backgroundImage: "url('/image/cup1.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+          }}
+        ></div>
+        <div
+          className="absolute"
+          style={{
+            bottom: '45%',
+            right: '10%',
+            width: '3rem',
+            height: '3rem',
+            backgroundImage: "url('/image/cup1.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+          }}
+        ></div>
+
         {/* Players */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32">
           <Player name="Player 4" bgImage="url('/image/smile6.jpg')" hearts={3} />
@@ -43,12 +93,12 @@ const Game: React.FC = () => {
 
       {/* Like ja Dislike nupud all vasakus nurgas */}
       <div className="absolute bottom-[10rem] left-[15rem] space-x-6 flex">
-       <IconButton color="primary" sx={{ fontSize: 40 }}>
-       <ThumbUpIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
-       </IconButton>
-       <IconButton color="secondary" sx={{ fontSize: 40 }}>
-       <ThumbDownIcon sx={{ fontSize: 40 }} /> {/* Määrab ikoonile suurema suuruse */}
-       </IconButton>
+        <IconButton color="primary" sx={{ fontSize: 40 }}>
+          <ThumbUpIcon sx={{ fontSize: 40 }} />
+        </IconButton>
+        <IconButton color="secondary" sx={{ fontSize: 40 }}>
+          <ThumbDownIcon sx={{ fontSize: 40 }} />
+        </IconButton>
       </div>
     </div>
   );
@@ -74,9 +124,9 @@ const Player: React.FC<PlayerProps> = ({ name, bgImage, hearts }) => {
         className="w-16 h-16 rounded-full"
         style={{
           backgroundImage: bgImage,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundColor: "transparent",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundColor: 'transparent',
         }}
       />
       {/* Mängija nimi */}

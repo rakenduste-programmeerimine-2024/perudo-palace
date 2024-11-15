@@ -14,6 +14,7 @@ module.exports = {
         'smile4-bg': "url('/image/smil4.jpg')",
         'table-bg': "url('/image/table.jpg')",
         'table2-bg': "url('/image/table_red.png')",
+        'cup-bg': "url('/image/cup1.png')",
       },
     },
     backgroundSize: {
