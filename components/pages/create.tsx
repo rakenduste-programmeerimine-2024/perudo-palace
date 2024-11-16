@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { TextField, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -12,8 +13,15 @@ const Create: React.FC = () => {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const supabase = createClient();
+  const [socketId, setSocketId] = useState<string>("");
 
   useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to socket server, socket ID:", socket.id);
+      setSocketId(socket.id as string);
+    });
+
     socket.on("room-error", (message) => {
       setError(message);
     });
@@ -23,6 +31,7 @@ const Create: React.FC = () => {
     });
 
     return () => {
+      socket.off("connect");
       socket.off("room-error");
       socket.off("room-created");
     };
@@ -36,6 +45,45 @@ const Create: React.FC = () => {
 
     setError("");
     socket.emit("create-room", roomCode, hostName);
+
+    addToDB();
+  };
+
+  const addToDB = async () => {
+    const { data, error } = await supabase
+      .from("player")
+      .insert([{ username: hostName, socket_id: socketId }])
+      .select();
+
+    // ... id where tabelis name = inputi name
+    const { data: playerData, error: playerError } = await supabase
+      .from("player")
+      .select("id")
+      .eq("username", hostName)
+      .single();
+
+    if (playerData) {
+      const host_id = playerData.id;
+
+      const { data: lobbyData, error: lobbyError } = await supabase
+        .from("lobby")
+        .insert([{ host_id: host_id, code: roomCode }])
+        .select();
+
+      if (lobbyError) {
+        console.error("Error inserting into lobby:", lobbyError);
+        return;
+      }
+
+      const lobby_id = lobbyData[0].id;
+
+      // player_in_lobby
+      const { data: playerInLobbyData, error: playerInLobbyError } =
+        await supabase
+          .from("player_in_lobby")
+          .insert([{ player_id: host_id, lobby_id: lobby_id }]);
+    }
+    console.log("Added to database");
   };
 
   return (
