@@ -11,11 +11,15 @@ const Room: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomCode = searchParams.get("roomCode");
+  const playerName = searchParams.get("playerName");
   const [players, setPlayers] = useState<string[]>([]);
-  const [playerName, setPlayerName] = useState<string>("");
 
   useEffect(() => {
     if (!roomCode) return;
+    if (!playerName) {
+      router.push("/lobby");
+      return;
+    }
 
     socket.emit("join-room", roomCode);
 
@@ -40,6 +44,7 @@ const Room: React.FC = () => {
 
   const handleLeaveRoom = () => {
     socket.emit("leave-room", roomCode, playerName);
+    setPlayers([]);
     router.push("/lobby");
   };
 

@@ -27,7 +27,7 @@ const Create: React.FC = () => {
     });
 
     socket.on("room-created", (roomCode) => {
-      router.push(`/room?roomCode=${roomCode}`);
+      router.push(`/room?roomCode=${roomCode}&playerName=${hostName}`);
     });
 
     return () => {
@@ -35,7 +35,7 @@ const Create: React.FC = () => {
       socket.off("room-error");
       socket.off("room-created");
     };
-  }, [router]);
+  }, [router, hostName]);
 
   const handleCreateRoom = () => {
     if (!hostName || !roomCode) {
