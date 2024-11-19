@@ -1,54 +1,61 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Avatar, Typography, TextField, IconButton, Button } from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import { useState } from "react";
+import { Typography, IconButton, Button } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
 
   const [players, setPlayers] = useState([
-    { id: 1, name: 'Player 1', bgImage: "url('/image/smile.jpg')", position: 'bottom' },
-    { id: 2, name: 'Player 2', bgImage: "url('/image/smile2.jpg')", position: 'right' },
-    { id: 3, name: 'Player 3', bgImage: "url('/image/smile5.jpg')", position: 'top' },
-    { id: 4, name: 'Player 4', bgImage: "url('/image/smile6.jpg')", position: 'left' },
+    { id: 1, name: "Player 1", bgImage: "url('/image/smile.jpg')", position: "bottom" },
+    { id: 2, name: "Player 2", bgImage: "url('/image/smile2.jpg')", position: "right" },
+    { id: 3, name: "Player 3", bgImage: "url('/image/smile5.jpg')", position: "top" },
+    { id: 4, name: "Player 4", bgImage: "url('/image/smile6.jpg')", position: "left" },
   ]);
 
-  // Positsioonide vahetamine enne mängu algust
+  const [bidNumber, setBidNumber] = useState(1); // Number 1-16
+  const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
+
+  const increaseBid = () => {
+    if (bidNumber < 16) setBidNumber(bidNumber + 1);
+  };
+  const decreaseBid = () => {
+    if (bidNumber > 1) setBidNumber(bidNumber - 1);
+  };
+  const increaseDice = () => {
+    if (diceValue < 6) setDiceValue(diceValue + 1);
+  };
+  const decreaseDice = () => {
+    if (diceValue > 1) setDiceValue(diceValue - 1);
+  };
+
   const handleAvatarClick = (clickedPlayerId: number) => {
-    if (gameStarted) return; // Kui mäng on alanud, ei saa positsioone muuta
+    if (gameStarted) return;
 
     setPlayers((prevPlayers) => {
-      const clickedPlayer = prevPlayers.find((player) => player.id === clickedPlayerId);
-      const player1 = prevPlayers.find((player) => player.position === 'bottom');
+      const clickedIndex = prevPlayers.findIndex((player) => player.id === clickedPlayerId);
+      const orderedPlayers = [...prevPlayers.slice(clickedIndex), ...prevPlayers.slice(0, clickedIndex)];
+      const positions = ["bottom", "right", "top", "left"];
 
-      if (clickedPlayer && player1) {
-        return prevPlayers.map((player) => {
-          if (player.id === clickedPlayerId) {
-            return { ...player, position: 'bottom' };
-          }
-          if (player.id === player1.id) {
-            return { ...player, position: clickedPlayer.position };
-          }
-          return player;
-        });
-      }
-      return prevPlayers;
+      return orderedPlayers.map((player, index) => ({
+        ...player,
+        position: positions[index],
+      }));
     });
   };
 
   const handleStartGame = () => {
-    setGameStarted(true); // Mängu alustamine lukustab positsioonid
+    setGameStarted(true);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
       {!gameStarted ? (
-        // LOBBY VAATES
         <>
-          {/* Mängulaud lobby's */}
+          {/* Lobby vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {players.map((player) => (
               <div
@@ -68,12 +75,12 @@ const GamePage: React.FC = () => {
               color="success"
               onClick={handleStartGame}
               sx={{
-                padding: '1rem 2rem',
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                backgroundColor: '#4CAF50',
-                '&:hover': {
-                  backgroundColor: '#45A049',
+                padding: "1rem 2rem",
+                fontSize: "1.25rem",
+                fontWeight: "bold",
+                backgroundColor: "#4CAF50",
+                "&:hover": {
+                  backgroundColor: "#45A049",
                 },
               }}
             >
@@ -82,9 +89,8 @@ const GamePage: React.FC = () => {
           </div>
         </>
       ) : (
-        // MÄNGU VAATES
         <>
-          {/* Mängulaud */}
+          {/* Mängu vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {/* Cups */}
             <div
@@ -136,7 +142,6 @@ const GamePage: React.FC = () => {
               }}
             ></div>
 
-            {/* Players */}
             {players.map((player) => (
               <div key={player.id} className={getPositionClasses(player.position)}>
                 <Player name={player.name} bgImage={player.bgImage} hearts={3} />
@@ -144,20 +149,46 @@ const GamePage: React.FC = () => {
             ))}
           </div>
 
-          {/* Sisendiväljad */}
-          <div className="absolute bottom-[10rem] right-[5rem] space-x-2 flex">
-            <TextField
-              variant="outlined"
-              type="number"
-              label="number of dice"
-              className="bg-white"
-            />
-            <TextField
-              variant="outlined"
-              type="number"
-              label="number of dots"
-              className="bg-white"
-            />
+          {/* Bid Number ja Dice Face Selector */}
+          <div className="absolute bottom-[10rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg">
+            <h1 className="text-2xl font-bold">Your Bid</h1>
+            <div className="flex items-center space-x-8">
+              {/* Bid Number Selector */}
+              <div className="flex flex-col items-center">
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={increaseBid}
+                >
+                  ↑
+                </button>
+                <div className="text-4xl font-bold">{bidNumber}</div>
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={decreaseBid}
+                >
+                  ↓
+                </button>
+              </div>
+              {/* Dice Face Selector */}
+              <div className="flex flex-col items-center">
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={increaseDice}
+                >
+                  ↑
+                </button>
+                <div className="text-4xl font-bold">🎲 {diceValue}</div>
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={decreaseDice}
+                >
+                  ↓
+                </button>
+              </div>
+            </div>
+            <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
+              Place Bid
+            </button>
           </div>
 
           {/* Like ja Dislike nupud */}
@@ -175,19 +206,18 @@ const GamePage: React.FC = () => {
   );
 };
 
-// Positsiooni klassid
 const getPositionClasses = (position: string) => {
   switch (position) {
-    case 'left':
-      return 'absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32';
-    case 'top':
-      return 'absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-32';
-    case 'right':
-      return 'absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-32';
-    case 'bottom':
-      return 'absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-32';
+    case "left":
+      return "absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32";
+    case "top":
+      return "absolute top-[-1rem] left-1/2 transform -translate-x-1/2 -translate-y-32";
+    case "right":
+      return "absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-32";
+    case "bottom":
+      return "absolute bottom-[-2rem] left-1/2 transform -translate-x-1/2 translate-y-32";
     default:
-      return '';
+      return "";
   }
 };
 
@@ -201,9 +231,8 @@ interface PlayerProps {
 const Player: React.FC<PlayerProps> = ({ name, bgImage, hearts, clickable }) => {
   return (
     <div
-      className={`flex flex-col items-center space-y-2 ${clickable ? 'cursor-pointer' : ''}`}
+      className={`flex flex-col items-center space-y-2 ${clickable ? "cursor-pointer" : ""}`}
     >
-      {/* Südamed */}
       {hearts && (
         <div className="flex space-x-1">
           {Array.from({ length: hearts }).map((_, index) => (
@@ -211,18 +240,16 @@ const Player: React.FC<PlayerProps> = ({ name, bgImage, hearts, clickable }) => 
           ))}
         </div>
       )}
-      {/* Mängija avatar */}
       <div
         className="w-16 h-16 rounded-full"
         style={{
           backgroundImage: bgImage,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: 'transparent',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundColor: "transparent",
         }}
       />
-      {/* Mängija nimi */}
-      <Typography variant="body1" className="font-semibold text-gray-700">
+      <Typography variant="body1" className="font-semibold text-white">
         {name}
       </Typography>
     </div>
