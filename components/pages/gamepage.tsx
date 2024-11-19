@@ -186,6 +186,13 @@ const GamePage: React.FC = () => {
                 </button>
               </div>
             </div>
+            {/* Dice Image */}
+            <div
+                className="mt-4 w-16 h-16 bg-cover bg-center"
+                style={{
+                backgroundImage: `url('/image/dice${diceValue}.png')`,
+                }}
+            ></div>
             <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
               Place Bid
             </button>
