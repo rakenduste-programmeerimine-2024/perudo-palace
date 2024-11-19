@@ -150,7 +150,7 @@ const GamePage: React.FC = () => {
           </div>
 
           {/* Bid Number ja Dice Face Selector */}
-          <div className="absolute bottom-[10rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg">
+          <div className="absolute top-[5rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg">
             <h1 className="text-2xl font-bold">Your Bid</h1>
             <div className="flex items-center space-x-8">
               {/* Bid Number Selector */}
