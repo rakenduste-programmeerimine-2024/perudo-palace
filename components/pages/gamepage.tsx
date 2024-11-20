@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
@@ -40,11 +40,19 @@ const GamePage: React.FC = () => {
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
 
-  // Täringupiltide genereerimine esimesel renderdusel
-  const randomDiceImages = dicePositions.map(() => {
-    const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
-    return `/image/w_dice/dice${diceNumber}.png`;
-  });
+
+  // Hoia täringute pildid seisundis
+  const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]);
+
+  // Genereeri täringute pildid ainult üks kord
+  useEffect(() => {
+    const initialDiceImages = dicePositions.map(() => {
+      const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
+      return `/image/w_dice/dice${diceNumber}.png`;
+    });
+    setRandomDiceImages(initialDiceImages);
+  }, []);
+
 
   const increaseBid = () => {
     if (bidNumber < 16) setBidNumber(bidNumber + 1);
@@ -76,6 +84,11 @@ const GamePage: React.FC = () => {
 
   const handleStartGame = () => {
     setGameStarted(true);
+    const newDiceImages = dicePositions.map(() => {
+      const diceNumber = Math.floor(Math.random() * 6) + 1;
+      return `/image/w_dice/dice${diceNumber}.png`;
+    });
+    setRandomDiceImages(newDiceImages);
   };
 
   return (
@@ -137,10 +150,10 @@ const GamePage: React.FC = () => {
             <div
               className="absolute"
               style={{
-                top: '45%',
-                left: '10%',
-                width: '3rem',
-                height: '3rem',
+                top: '38%',
+                left: '8%',
+                width: '9rem',
+                height: '9rem',
                 backgroundImage: "url('/image/cup1.png')",
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
@@ -149,10 +162,10 @@ const GamePage: React.FC = () => {
             <div
               className="absolute"
               style={{
-                top: '20%',
-                right: '47%',
-                width: '3rem',
-                height: '3rem',
+                top: '15%',
+                right: '39%',
+                width: '9rem',
+                height: '9rem',
                 backgroundImage: "url('/image/cup1.png')",
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
