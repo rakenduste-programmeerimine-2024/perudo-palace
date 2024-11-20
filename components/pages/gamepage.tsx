@@ -3,17 +3,15 @@
 import { useState } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
 
   const [players, setPlayers] = useState([
-    { id: 1, name: "Player 1", bgImage: "url('/image/smile.jpg')", position: "bottom" },
-    { id: 2, name: "Player 2", bgImage: "url('/image/smile2.jpg')", position: "right" },
-    { id: 3, name: "Player 3", bgImage: "url('/image/smile5.jpg')", position: "top" },
-    { id: 4, name: "Player 4", bgImage: "url('/image/smile6.jpg')", position: "left" },
+    { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
+    { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
+    { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
+    { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
   ]);
 
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
@@ -193,7 +191,7 @@ const GamePage: React.FC = () => {
             <div
                 className="w-16 h-16 bg-cover bg-center"
                 style={{
-                backgroundImage: `url('/image/dice${diceValue}.png')`,
+                backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
                 }}
             ></div>
             </div>
