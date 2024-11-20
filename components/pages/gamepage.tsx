@@ -4,6 +4,29 @@ import { useState } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
+const dicePositions = [
+    // Define täringu positsioonid
+    { top: "45%", left: "10%" },
+    { top: "20%", right: "47%" },
+    { bottom: "20%", left: "47%" },
+    { bottom: "45%", right: "10%" },
+
+    { top: "55%", left: "10%" },
+    { top: "20%", right: "41%" },
+    { bottom: "20%", left: "41%" },
+    { bottom: "35%", right: "10%" },
+
+    { top: "45%", left: "15%" },
+    { top: "32%", right: "47%" },
+    { bottom: "32%", left: "47%" },
+    { bottom: "45%", right: "15%" },
+
+    { top: "55%", left: "15%" },
+    { top: "32%", right: "41%" },
+    { bottom: "32%", left: "41%" },
+    { bottom: "35%", right: "15%" },
+  ];
+
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
 
@@ -16,6 +39,12 @@ const GamePage: React.FC = () => {
 
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
+
+  // Täringupiltide genereerimine esimesel renderdusel
+  const randomDiceImages = dicePositions.map(() => {
+    const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
+    return `/image/w_dice/dice${diceNumber}.png`;
+  });
 
   const increaseBid = () => {
     if (bidNumber < 16) setBidNumber(bidNumber + 1);
@@ -90,6 +119,20 @@ const GamePage: React.FC = () => {
         <>
           {/* Mängu vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
+          {randomDiceImages.map((diceImage, index) => (
+              <div
+                key={index}
+                className="absolute"
+                style={{
+                  ...dicePositions[index],
+                  width: "3rem",
+                  height: "3rem",
+                  backgroundImage: `url('${diceImage}')`,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                }}
+              ></div>
+            ))}
             {/* Cups */}
             <div
               className="absolute"
@@ -147,58 +190,61 @@ const GamePage: React.FC = () => {
             ))}
           </div>
 
-          {/* Bid Number ja Dice Face Selector */}
-          <div className="absolute top-[5rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg">
-            <h1 className="text-2xl font-bold">Your Bid</h1>
-            <div className="flex items-center space-x-8">
-              {/* Bid Number Selector */}
-              <div className="flex flex-col items-center">
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                  onClick={increaseBid}
-                >
-                  ↑
-                </button>
-                <div className="text-4xl font-bold">{bidNumber}</div>
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                  onClick={decreaseBid}
-                >
-                  ↓
-                </button>
-              </div>
-              {/* Dice Face Selector */}
-              <div className="flex flex-col items-center">
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                  onClick={increaseDice}
-                >
-                  ↑
-                </button>
-                <div className="text-4xl font-bold">🎲 {diceValue}</div>
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                  onClick={decreaseDice}
-                >
-                  ↓
-                </button>
-              </div>
-            </div>
-            {/* Dice Image Section */}
-            <div className="mt-4 flex items-center space-x-4">
-            <div className="text-4xl font-bold text-white">{bidNumber}</div>
-            <div className="text-4xl font-bold text-white">X</div>
-            <div
-                className="w-16 h-16 bg-cover bg-center"
-                style={{
-                backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
-                }}
-            ></div>
-            </div>
-            <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
-              Place Bid
+        {/* Bid Number ja Dice Face Selector */}
+        <div
+        className="absolute top-[5rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
+        style={{ width: "220px", height: "370px" }} // Kindel laius ja kõrgus
+        >
+        <h1 className="text-2xl font-bold">Your Bid</h1>
+        <div className="flex items-center justify-center space-x-8">
+            {/* Bid Number Selector */}
+            <div className="flex flex-col items-center">
+            <button
+                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                onClick={increaseBid}
+            >
+                ↑
             </button>
-          </div>
+            <div className="text-4xl font-bold text-center">{bidNumber}</div>
+            <button
+                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                onClick={decreaseBid}
+            >
+                ↓
+            </button>
+            </div>
+            {/* Dice Face Selector */}
+            <div className="flex flex-col items-center">
+            <button
+                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                onClick={increaseDice}
+            >
+                ↑
+            </button>
+            <div className="text-4xl font-bold text-center">🎲 {diceValue}</div>
+            <button
+                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                onClick={decreaseDice}
+            >
+                ↓
+            </button>
+            </div>
+        </div>
+        {/* Dice Image Section */}
+        <div className="mt-4 flex items-center justify-center space-x-4">
+            <div className="text-4xl font-bold">{bidNumber}</div>
+            <div className="text-4xl font-bold">X</div>
+            <div
+            className="w-16 h-16 bg-cover bg-center"
+            style={{
+                backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+            }}
+            ></div>
+        </div>
+        <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
+            Place Bid
+        </button>
+        </div>
         {/* Sword ja Arrow nupud */}
         <div className="absolute bottom-[7rem] left-[10rem] space-x-6 flex">
         {/* Sword ikoon */}
