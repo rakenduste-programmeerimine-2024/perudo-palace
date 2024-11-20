@@ -201,16 +201,54 @@ const GamePage: React.FC = () => {
               Place Bid
             </button>
           </div>
+        {/* Sword ja Arrow nupud */}
+        <div className="absolute bottom-[7rem] left-[10rem] space-x-6 flex">
+        {/* Sword ikoon */}
+        <IconButton
+            color="primary"
+            sx={{
+            fontSize: 40,
+            width: "150px", // määrab laiuse
+            height: "150px", // määrab kõrguse
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            }}
+        >
+            <img
+            src="/image/sword.png"
+            alt="Sword"
+            style={{
+                width: "100%", // kohandab pildi suuruse nupu sees
+                height: "100%",
+                objectFit: "contain",
+            }}
+            />
+        </IconButton>
 
-          {/* Like ja Dislike nupud */}
-          <div className="absolute bottom-[10rem] left-[15rem] space-x-6 flex">
-            <IconButton color="primary" sx={{ fontSize: 40 }}>
-              <ThumbUpIcon sx={{ fontSize: 40 }} />
-            </IconButton>
-            <IconButton color="secondary" sx={{ fontSize: 40 }}>
-              <ThumbDownIcon sx={{ fontSize: 40 }} />
-            </IconButton>
-          </div>
+            {/* Arrow ikoon */}
+            <IconButton
+            color="primary"
+            sx={{
+            fontSize: 40,
+            width: "150px", // määrab laiuse
+            height: "150px", // määrab kõrguse
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            }}
+        >
+            <img
+            src="/image/arrow.png"
+            alt="Arrow"
+            style={{
+                width: "100%", // kohandab pildi suuruse nupu sees
+                height: "100%",
+                objectFit: "contain",
+            }}
+            />
+        </IconButton>
+        </div>
         </>
       )}
     </div>
