@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { TextField, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -12,6 +13,8 @@ const Join: React.FC = () => {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const supabase = createClient();
+  const [socketId, setSocketId] = useState<string>("");
 
   useEffect(() => {
     socket.on("room-error", (message) => {
@@ -36,6 +39,33 @@ const Join: React.FC = () => {
 
     setError("");
     socket.emit("join-room", roomCode, playerName);
+
+    // addToDB();
+  };
+
+  const addToDB = async () => {
+    // player
+    const { data: playerData, error: playerError } = await supabase
+      .from("player")
+      .insert([{ username: playerName, socket_id: socketId }])
+      .select("id");
+
+    const player_id = playerData?.[0]?.id;
+
+    // lobby ... id where tabelis kood = inputi kood
+    const { data: lobbyData, error: lobbyError } = await supabase
+      .from("lobby")
+      .select("id")
+      .eq("code", roomCode)
+      .single();
+
+    const lobby_id = lobbyData?.id;
+
+    // player_in_lobby
+    const { data: playerInLobbyData, error: playerInLobbyError } =
+      await supabase
+        .from("player_in_lobby")
+        .insert([{ player_id: player_id, lobby_id: lobby_id }]);
   };
 
   return (

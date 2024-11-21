@@ -21,7 +21,7 @@ const Room: React.FC = () => {
       return;
     }
 
-    socket.emit("join-room", roomCode);
+    socket.emit("update-room", roomCode);
 
     socket.on("player-joined", (playerName) => {
       setPlayers((prev) => [...prev, playerName]);

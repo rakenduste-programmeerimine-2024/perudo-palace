@@ -22,6 +22,7 @@ io.on("connection", (socket) => {
       rooms[roomCode] = { host: hostName, players: [hostName] };
       socket.join(roomCode);
       socket.emit("room-created", roomCode);
+      console.log("Players in room when creating:", rooms[roomCode].players);
     }
   });
 
@@ -31,6 +32,18 @@ io.on("connection", (socket) => {
       socket.join(roomCode);
       io.to(roomCode).emit("current-players", rooms[roomCode].players);
       io.to(roomCode).emit("player-joined", playerName);
+      console.log("Players in room when joining:", rooms[roomCode].players);
+    } else {
+      socket.emit("room-error", "Room does not exist.");
+    }
+  });
+
+  socket.on("update-room", (roomCode, playerName) => {
+    if (rooms[roomCode]) {
+      socket.join(roomCode);
+      io.to(roomCode).emit("current-players", rooms[roomCode].players);
+      io.to(roomCode).emit("player-joined", playerName);
+      console.log("Players in room when updating:", rooms[roomCode].players);
     } else {
       socket.emit("room-error", "Room does not exist.");
     }
@@ -47,8 +60,12 @@ io.on("connection", (socket) => {
       io.to(roomCode).emit("player-left", playerName);
       io.to(roomCode).emit("current-players", rooms[roomCode].players);
 
+      console.log("Kustutasin mängija");
+      console.log("Players in room before deletion:", rooms[roomCode].players);
+      console.log("Player count:", rooms[roomCode].players.length);
+
       // Kui ruum on tühi, kustuta
-      if (rooms[roomCode].players.length === 0) {
+      if (rooms[roomCode].players.length == 0) {
         delete rooms[roomCode];
         console.log("room " + roomCode + " deleted");
       }

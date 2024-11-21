@@ -46,7 +46,7 @@ const Create: React.FC = () => {
     setError("");
     socket.emit("create-room", roomCode, hostName);
 
-    addToDB();
+    // addToDB();
   };
 
   const addToDB = async () => {
