@@ -262,8 +262,8 @@ const GamePage: React.FC = () => {
               color="primary"
               sx={{
                 fontSize: 40,
-                width: "140px", // määrab laiuse
-                height: "140px", // määrab kõrguse
+                width: "150px", // määrab laiuse
+                height: "150px", // määrab kõrguse
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
