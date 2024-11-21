@@ -6,25 +6,25 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 
 const dicePositions = [
     // Define täringu positsioonid
-    { top: "45%", left: "10%" },
-    { top: "20%", right: "47%" },
-    { bottom: "20%", left: "47%" },
-    { bottom: "45%", right: "10%" },
+    { top: "43%", left: "10%" },//vasak
+    { top: "55%", left: "10%" },//vasak
+    { top: "43%", left: "16%" },//vasak
+    { top: "55%", left: "16%" },//vasak
 
-    { top: "55%", left: "10%" },
-    { top: "20%", right: "41%" },
-    { bottom: "20%", left: "41%" },
-    { bottom: "35%", right: "10%" },
+    { top: "20%", right: "47%" },//ülemine
+    { top: "20%", right: "41%" },//ülemine
+    { top: "32%", right: "47%" },//ülemine
+    { top: "32%", right: "41%" },//ülemine
 
-    { top: "45%", left: "15%" },
-    { top: "32%", right: "47%" },
-    { bottom: "32%", left: "47%" },
-    { bottom: "45%", right: "15%" },
+    { bottom: "20%", left: "47%" },//alumine
+    { bottom: "20%", left: "41%" },//alumine
+    { bottom: "32%", left: "47%" },//alumine
+    { bottom: "32%", left: "41%" },//alumine
 
-    { top: "55%", left: "15%" },
-    { top: "32%", right: "41%" },
-    { bottom: "32%", left: "41%" },
-    { bottom: "35%", right: "15%" },
+    { bottom: "47%", right: "10%" },//parem
+    { bottom: "35%", right: "10%" },//parem
+    { bottom: "47%", right: "16%" },//parem
+    { bottom: "35%", right: "16%" },//parem
   ];
 
 const GamePage: React.FC = () => {
@@ -146,55 +146,25 @@ const GamePage: React.FC = () => {
                 }}
               ></div>
             ))}
-            {/* Cups */}
-            <div
-              className="absolute"
-              style={{
-                top: '38%',
-                left: '8%',
-                width: '9rem',
-                height: '9rem',
-                backgroundImage: "url('/image/cup1.png')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-              }}
-            ></div>
-            <div
-              className="absolute"
-              style={{
-                top: '15%',
-                right: '39%',
-                width: '9rem',
-                height: '9rem',
-                backgroundImage: "url('/image/cup1.png')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-              }}
-            ></div>
-            <div
-              className="absolute"
-              style={{
-                bottom: '20%',
-                left: '47%',
-                width: '3rem',
-                height: '3rem',
-                backgroundImage: "url('/image/cup1.png')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-              }}
-            ></div>
-            <div
-              className="absolute"
-              style={{
-                bottom: '45%',
-                right: '10%',
-                width: '3rem',
-                height: '3rem',
-                backgroundImage: "url('/image/cup1.png')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-              }}
-            ></div>
+            {/*cups*/}
+            {[
+              { top: '41%', left: '10%' },  // Vasakul
+              { top: '15%', right: '44%' }, // Üleval
+              { bottom: '45%', right: '10%' } // Paremal
+            ].map((style, index) => (
+              <div
+                key={index}
+                className="absolute"
+                style={{
+                  ...style,
+                  width: '6rem',
+                  height: '6rem',
+                  backgroundImage: "url('/image/cup1.png')",
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              ></div>
+            ))}
 
             {players.map((player) => (
               <div key={player.id} className={getPositionClasses(player.position)}>
@@ -205,8 +175,8 @@ const GamePage: React.FC = () => {
 
         {/* Bid Number ja Dice Face Selector */}
         <div
-        className="absolute top-[5rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
-        style={{ width: "220px", height: "370px" }} // Kindel laius ja kõrgus
+        className="absolute bottom-[2rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
+        style={{ width: "240px", height: "350px" }} // Kindel laius ja kõrgus
         >
         <h1 className="text-2xl font-bold">Your Bid</h1>
         <div className="flex items-center justify-center space-x-8">
@@ -288,8 +258,8 @@ const GamePage: React.FC = () => {
             color="primary"
             sx={{
             fontSize: 40,
-            width: "150px", // määrab laiuse
-            height: "150px", // määrab kõrguse
+            width: "140px", // määrab laiuse
+            height: "140px", // määrab kõrguse
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
