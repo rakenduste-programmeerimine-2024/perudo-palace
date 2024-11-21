@@ -9,7 +9,7 @@ export default async function HomePage() {
         <div className="grid grid-cols-2 gap-6 mt-32">
           <MenuButton title="Sign In" href="/sign-in" />
           <MenuButton title="Sign Up" href="/sign-up" />
-          <MenuButton title="Join Game" href="/join-game" />
+          <MenuButton title="Join Game" href="/join" />
           <MenuButton title="Rules" href="/rules" />
         </div>
       </div>
