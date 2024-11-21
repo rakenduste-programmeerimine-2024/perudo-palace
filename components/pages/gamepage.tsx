@@ -229,52 +229,58 @@ const GamePage: React.FC = () => {
         </button>
         </div>
         {/* Sword ja Arrow nupud */}
-        <div className="absolute bottom-[7rem] left-[10rem] space-x-6 flex">
-        {/* Sword ikoon */}
-        <IconButton
-            color="primary"
-            sx={{
-            fontSize: 40,
-            width: "150px", // määrab laiuse
-            height: "150px", // määrab kõrguse
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            }}
-        >
-            <img
-            src="/image/sword.png"
-            alt="Sword"
-            style={{
-                width: "100%", // kohandab pildi suuruse nupu sees
-                height: "100%",
-                objectFit: "contain",
-            }}
-            />
-        </IconButton>
-
-            {/* Arrow ikoon */}
+        <div className="absolute bottom-[7rem] left-[10rem] flex space-x-6 items-center">
+          {/* Sword nupp ja tekst */}
+          <div className="flex flex-col items-center">
             <IconButton
-            color="primary"
-            sx={{
-            fontSize: 40,
-            width: "140px", // määrab laiuse
-            height: "140px", // määrab kõrguse
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            }}
-        >
-            <img
-            src="/image/arrow.png"
-            alt="Arrow"
-            style={{
-                width: "100%", // kohandab pildi suuruse nupu sees
-                height: "100%",
-                objectFit: "contain",
-            }}
-            />
-        </IconButton>
+              color="primary"
+              sx={{
+                fontSize: 40,
+                width: "150px", // määrab laiuse
+                height: "150px", // määrab kõrguse
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src="/image/sword.png"
+                alt="Sword"
+                style={{
+                  width: "100%", // kohandab pildi suuruse nupu sees
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            </IconButton>
+            <span className="text-white text-lg font-semibold mt-2">Challenge</span>
+          </div>
+
+          {/* Arrow nupp ja tekst */}
+          <div className="flex flex-col items-center">
+            <IconButton
+              color="primary"
+              sx={{
+                fontSize: 40,
+                width: "140px", // määrab laiuse
+                height: "140px", // määrab kõrguse
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src="/image/arrow.png"
+                alt="Arrow"
+                style={{
+                  width: "100%", // kohandab pildi suuruse nupu sees
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            </IconButton>
+            <span className="text-white text-lg font-semibold mt-2">Bullseye</span>
+          </div>
         </div>
         </>
       )}
