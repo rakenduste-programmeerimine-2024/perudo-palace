@@ -3,46 +3,124 @@
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useRouter, useSearchParams } from "next/navigation";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3030");
 
 const dicePositions = [
-    // Define täringu positsioonid
-    { top: "43%", left: "10%" },//vasak
-    { top: "55%", left: "10%" },//vasak
-    { top: "43%", left: "16%" },//vasak
-    { top: "55%", left: "16%" },//vasak
+  // Define täringu positsioonid
+  { top: "43%", left: "10%" }, //vasak
+  { top: "55%", left: "10%" }, //vasak
+  { top: "43%", left: "16%" }, //vasak
+  { top: "55%", left: "16%" }, //vasak
 
-    { top: "20%", right: "47%" },//ülemine
-    { top: "20%", right: "41%" },//ülemine
-    { top: "32%", right: "47%" },//ülemine
-    { top: "32%", right: "41%" },//ülemine
+  { top: "20%", right: "47%" }, //ülemine
+  { top: "20%", right: "41%" }, //ülemine
+  { top: "32%", right: "47%" }, //ülemine
+  { top: "32%", right: "41%" }, //ülemine
 
-    { bottom: "20%", left: "47%" },//alumine
-    { bottom: "20%", left: "41%" },//alumine
-    { bottom: "32%", left: "47%" },//alumine
-    { bottom: "32%", left: "41%" },//alumine
+  { bottom: "20%", left: "47%" }, //alumine
+  { bottom: "20%", left: "41%" }, //alumine
+  { bottom: "32%", left: "47%" }, //alumine
+  { bottom: "32%", left: "41%" }, //alumine
 
-    { bottom: "47%", right: "10%" },//parem
-    { bottom: "35%", right: "10%" },//parem
-    { bottom: "47%", right: "16%" },//parem
-    { bottom: "35%", right: "16%" },//parem
-  ];
+  { bottom: "47%", right: "10%" }, //parem
+  { bottom: "35%", right: "10%" }, //parem
+  { bottom: "47%", right: "16%" }, //parem
+  { bottom: "35%", right: "16%" }, //parem
+];
 
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const roomCode = searchParams.get("roomCode");
+  const playerName = searchParams.get("playerName");
+  const [players, setPlayers] = useState<
+    { id: number; name: string; bgImage: string; position: string }[]
+  >([]);
 
-  const [players, setPlayers] = useState([
-    { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
-    { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
-    { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
-    { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
-  ]);
+  // const [players, setPlayers] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Player 1",
+  //     bgImage: "url('/image/smile/smile.jpg')",
+  //     position: "bottom",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Player 2",
+  //     bgImage: "url('/image/smile/smile2.jpg')",
+  //     position: "right",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Player 3",
+  //     bgImage: "url('/image/smile/smile5.jpg')",
+  //     position: "top",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Player 4",
+  //     bgImage: "url('/image/smile/smile6.jpg')",
+  //     position: "left",
+  //   },
+  // ]);
 
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
 
-
   // Hoia täringute pildid seisundis
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]);
+
+  // Ruumi loogika useEffect eraldi
+  useEffect(() => {
+    if (!roomCode || !playerName) {
+      router.push("/");
+      return;
+    }
+
+    socket.emit("update-room", roomCode);
+
+    // Update'i mängijaid
+    const positions = ["bottom", "right", "top", "left"];
+
+    const assignPlayerData = (playersList: string[]) =>
+      playersList.map((name, index) => ({
+        id: index,
+        name,
+        bgImage: `/image/smile/smile${(index % 6) + 1}.jpg`, // Prgu käi lihtsalt pildid läbi
+        position: positions[index % positions.length], // Pane positsioonid
+      }));
+
+    socket.on("current-players", (playersList: string[]) => {
+      setPlayers(assignPlayerData(playersList));
+    });
+
+    socket.on("player-joined", (newPlayerName: string) => {
+      if (!newPlayerName) return;
+      setPlayers((prev) => {
+        const updatedPlayers = [...prev.map((p) => p.name), newPlayerName];
+        return assignPlayerData(updatedPlayers);
+      });
+    });
+
+    socket.on("player-left", (leftPlayerName: string) => {
+      setPlayers((prev) => {
+        const updatedPlayers = prev
+          .map((p) => p.name)
+          .filter((name) => name !== leftPlayerName);
+        return assignPlayerData(updatedPlayers);
+      });
+    });
+
+    return () => {
+      socket.off("current-players");
+      socket.off("player-joined");
+      socket.off("player-left");
+    };
+  }, [roomCode, playerName, router]);
 
   // Genereeri täringute pildid ainult üks kord
   useEffect(() => {
@@ -52,7 +130,6 @@ const GamePage: React.FC = () => {
     });
     setRandomDiceImages(initialDiceImages);
   }, []);
-
 
   const increaseBid = () => {
     if (bidNumber < 16) setBidNumber(bidNumber + 1);
@@ -67,28 +144,71 @@ const GamePage: React.FC = () => {
     if (diceValue > 1) setDiceValue(diceValue - 1);
   };
 
-  const handleAvatarClick = (clickedPlayerId: number) => {
+  const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
 
     setPlayers((prevPlayers) => {
-      const clickedIndex = prevPlayers.findIndex((player) => player.id === clickedPlayerId);
-      const orderedPlayers = [...prevPlayers.slice(clickedIndex), ...prevPlayers.slice(0, clickedIndex)];
-      const positions = ["bottom", "right", "top", "left"];
+      // Check if the position is already taken
+      const positionTaken = prevPlayers.some(
+        (player) => player.position === clickedPosition
+      );
 
-      return orderedPlayers.map((player, index) => ({
-        ...player,
-        position: positions[index],
-      }));
+      if (positionTaken) {
+        return prevPlayers; // If taken, do nothing
+      }
+
+      // Assign the current player to the clicked position
+      return prevPlayers.map((player) => {
+        if (player.name === playerName) {
+          return { ...player, position: clickedPosition };
+        }
+        return player;
+      });
+
+      // const clickedIndex = prevPlayers.findIndex(
+      //   (player) => player.id === clickedPlayerId
+      // );
+      // const orderedPlayers = [
+      //   ...prevPlayers.slice(clickedIndex),
+      //   ...prevPlayers.slice(0, clickedIndex),
+      // ];
+      // const positions = ["bottom", "right", "top", "left"];
+      // return orderedPlayers.map((player, index) => ({
+      //   ...player,
+      //   position: positions[index % positions.length],
+      // }));
     });
   };
 
   const handleStartGame = () => {
+    const order = ["bottom", "right", "top", "left"];
+
+    // Ensure all players have a position and establish the playing order
+    const orderedPlayers = players
+      .filter((player) => order.includes(player.position)) // Filter players with valid positions
+      .sort((a, b) => order.indexOf(a.position) - order.indexOf(b.position)); // Sort by position
+
+    setPlayers(orderedPlayers); // Update players to reflect the playing order
     setGameStarted(true);
+
+    // Generate dice images for the game
     const newDiceImages = dicePositions.map(() => {
       const diceNumber = Math.floor(Math.random() * 6) + 1;
       return `/image/w_dice/dice${diceNumber}.png`;
     });
     setRandomDiceImages(newDiceImages);
+    // setGameStarted(true);
+    // const newDiceImages = dicePositions.map(() => {
+    //   const diceNumber = Math.floor(Math.random() * 6) + 1;
+    //   return `/image/w_dice/dice${diceNumber}.png`;
+    // });
+    // setRandomDiceImages(newDiceImages);
+  };
+
+  const handleLeaveRoom = () => {
+    socket.emit("leave-room", roomCode, playerName);
+    setPlayers([]);
+    router.push("/");
   };
 
   return (
@@ -97,18 +217,43 @@ const GamePage: React.FC = () => {
         <>
           {/* Lobby vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
-            {players.map((player) => (
-              <div
-                key={player.id}
-                className={getPositionClasses(player.position)}
-                onClick={() => handleAvatarClick(player.id)}
-              >
-                <Player name={player.name} bgImage={player.bgImage} clickable={!gameStarted} />
-              </div>
-            ))}
+            {["bottom", "right", "top", "left"].map((position) => {
+              const playerInPosition = players.find(
+                (player) => player.position === position
+              );
+
+              return (
+                <div
+                  key={position}
+                  className={getPositionClasses(position)}
+                  onClick={() => handleAvatarClick(position)}
+                  style={{
+                    cursor: gameStarted ? "default" : "pointer", // Show cursor pointer only if game hasn't started
+                  }}
+                >
+                  {playerInPosition ? (
+                    <Player
+                      name={playerInPosition.name}
+                      bgImage={playerInPosition.bgImage}
+                      clickable={!gameStarted}
+                    />
+                  ) : (
+                    // Always show an empty slot if no player is in this position
+                    <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                      <Typography
+                        variant="body1"
+                        className="font-semibold text-white"
+                      >
+                        Empty
+                      </Typography>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Start Game nupp */}
+          {/* Start Game ja Leave nupp */}
           <div className="absolute bottom-[10rem] right-[5rem]">
             <Button
               variant="contained"
@@ -126,13 +271,29 @@ const GamePage: React.FC = () => {
             >
               START GAME
             </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleLeaveRoom}
+              sx={{
+                padding: "1rem 2rem",
+                fontSize: "1.25rem",
+                fontWeight: "bold",
+                backgroundColor: "#af4c4c",
+                "&:hover": {
+                  backgroundColor: "#a04545",
+                },
+              }}
+            >
+              LEAVE
+            </Button>
           </div>
         </>
       ) : (
         <>
           {/* Mängu vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
-          {randomDiceImages.map((diceImage, index) => (
+            {randomDiceImages.map((diceImage, index) => (
               <div
                 key={index}
                 className="absolute"
@@ -148,140 +309,155 @@ const GamePage: React.FC = () => {
             ))}
             {/*cups*/}
             {[
-              { top: '41%', left: '10%' },  // Vasakul
-              { top: '15%', right: '44%' }, // Üleval
-              { bottom: '45%', right: '10%' } // Paremal
+              { top: "41%", left: "10%" }, // Vasakul
+              { top: "15%", right: "44%" }, // Üleval
+              { bottom: "45%", right: "10%" }, // Paremal
             ].map((style, index) => (
               <div
                 key={index}
                 className="absolute"
                 style={{
                   ...style,
-                  width: '6rem',
-                  height: '6rem',
+                  width: "6rem",
+                  height: "6rem",
                   backgroundImage: "url('/image/cup1.png')",
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
                 }}
               ></div>
             ))}
 
             {players.map((player) => (
-              <div key={player.id} className={getPositionClasses(player.position)}>
-                <Player name={player.name} bgImage={player.bgImage} hearts={3} />
+              <div
+                key={player.id}
+                className={getPositionClasses(player.position)}
+              >
+                <Player
+                  name={player.name}
+                  bgImage={player.bgImage}
+                  hearts={3}
+                />
               </div>
             ))}
           </div>
 
-        {/* Bid Number ja Dice Face Selector */}
-        <div
-        className="absolute bottom-[2rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
-        style={{ width: "240px", height: "350px" }} // Kindel laius ja kõrgus
-        >
-        <h1 className="text-2xl font-bold">Your Bid</h1>
-        <div className="flex items-center justify-center space-x-8">
-            {/* Bid Number Selector */}
-            <div className="flex flex-col items-center">
-            <button
-                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                onClick={increaseBid}
-            >
-                ↑
-            </button>
-            <div className="text-4xl font-bold text-center">{bidNumber}</div>
-            <button
-                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                onClick={decreaseBid}
-            >
-                ↓
-            </button>
+          {/* Bid Number ja Dice Face Selector */}
+          <div
+            className="absolute bottom-[2rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
+            style={{ width: "240px", height: "350px" }} // Kindel laius ja kõrgus
+          >
+            <h1 className="text-2xl font-bold">Your Bid</h1>
+            <div className="flex items-center justify-center space-x-8">
+              {/* Bid Number Selector */}
+              <div className="flex flex-col items-center">
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={increaseBid}
+                >
+                  ↑
+                </button>
+                <div className="text-4xl font-bold text-center">
+                  {bidNumber}
+                </div>
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={decreaseBid}
+                >
+                  ↓
+                </button>
+              </div>
+              {/* Dice Face Selector */}
+              <div className="flex flex-col items-center">
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={increaseDice}
+                >
+                  ↑
+                </button>
+                <div className="text-4xl font-bold text-center">
+                  🎲 {diceValue}
+                </div>
+                <button
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  onClick={decreaseDice}
+                >
+                  ↓
+                </button>
+              </div>
             </div>
-            {/* Dice Face Selector */}
-            <div className="flex flex-col items-center">
-            <button
-                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                onClick={increaseDice}
-            >
-                ↑
-            </button>
-            <div className="text-4xl font-bold text-center">🎲 {diceValue}</div>
-            <button
-                className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
-                onClick={decreaseDice}
-            >
-                ↓
-            </button>
-            </div>
-        </div>
-        {/* Dice Image Section */}
-        <div className="mt-4 flex items-center justify-center space-x-4">
-            <div className="text-4xl font-bold">{bidNumber}</div>
-            <div className="text-4xl font-bold">X</div>
-            <div
-            className="w-16 h-16 bg-cover bg-center"
-            style={{
-                backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
-            }}
-            ></div>
-        </div>
-        <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
-            Place Bid
-        </button>
-        </div>
-        {/* Sword ja Arrow nupud */}
-        <div className="absolute bottom-[7rem] left-[10rem] flex space-x-6 items-center">
-          {/* Sword nupp ja tekst */}
-          <div className="flex flex-col items-center">
-            <IconButton
-              color="primary"
-              sx={{
-                fontSize: 40,
-                width: "150px", // määrab laiuse
-                height: "150px", // määrab kõrguse
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src="/image/sword.png"
-                alt="Sword"
+            {/* Dice Image Section */}
+            <div className="mt-4 flex items-center justify-center space-x-4">
+              <div className="text-4xl font-bold">{bidNumber}</div>
+              <div className="text-4xl font-bold">X</div>
+              <div
+                className="w-16 h-16 bg-cover bg-center"
                 style={{
-                  width: "100%", // kohandab pildi suuruse nupu sees
-                  height: "100%",
-                  objectFit: "contain",
+                  backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
                 }}
-              />
-            </IconButton>
-            <span className="text-white text-lg font-semibold mt-2">Challenge</span>
+              ></div>
+            </div>
+            <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
+              Place Bid
+            </button>
           </div>
+          {/* Sword ja Arrow nupud */}
+          <div className="absolute bottom-[7rem] left-[10rem] flex space-x-6 items-center">
+            {/* Sword nupp ja tekst */}
+            <div className="flex flex-col items-center">
+              <IconButton
+                color="primary"
+                sx={{
+                  fontSize: 40,
+                  width: "150px", // määrab laiuse
+                  height: "150px", // määrab kõrguse
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src="/image/sword.png"
+                  alt="Sword"
+                  style={{
+                    width: "100%", // kohandab pildi suuruse nupu sees
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </IconButton>
+              <span className="text-white text-lg font-semibold mt-2">
+                Challenge
+              </span>
+            </div>
 
-          {/* Arrow nupp ja tekst */}
-          <div className="flex flex-col items-center">
-            <IconButton
-              color="primary"
-              sx={{
-                fontSize: 40,
-                width: "150px", // määrab laiuse
-                height: "150px", // määrab kõrguse
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src="/image/arrow.png"
-                alt="Arrow"
-                style={{
-                  width: "100%", // kohandab pildi suuruse nupu sees
-                  height: "100%",
-                  objectFit: "contain",
+            {/* Arrow nupp ja tekst */}
+            <div className="flex flex-col items-center">
+              <IconButton
+                color="primary"
+                sx={{
+                  fontSize: 40,
+                  width: "150px", // määrab laiuse
+                  height: "150px", // määrab kõrguse
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-            </IconButton>
-            <span className="text-white text-lg font-semibold mt-2">Bullseye</span>
+              >
+                <img
+                  src="/image/arrow.png"
+                  alt="Arrow"
+                  style={{
+                    width: "100%", // kohandab pildi suuruse nupu sees
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </IconButton>
+              <span className="text-white text-lg font-semibold mt-2">
+                Bullseye
+              </span>
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>
@@ -310,7 +486,12 @@ interface PlayerProps {
   clickable?: boolean;
 }
 
-const Player: React.FC<PlayerProps> = ({ name, bgImage, hearts, clickable }) => {
+const Player: React.FC<PlayerProps> = ({
+  name,
+  bgImage,
+  hearts,
+  clickable,
+}) => {
   return (
     <div
       className={`flex flex-col items-center space-y-2 ${clickable ? "cursor-pointer" : ""}`}
