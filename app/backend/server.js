@@ -27,7 +27,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join-room", (roomCode, playerName) => {
-    if (rooms[roomCode]) {
+    if (rooms[roomCode].players.length == 4) {
+      socket.emit("room-error", "Room player limit reached (4).");
+    } else if (rooms[roomCode]) {
       rooms[roomCode].players.push(playerName);
       socket.join(roomCode);
       io.to(roomCode).emit("current-players", rooms[roomCode].players);
