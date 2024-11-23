@@ -92,7 +92,7 @@ const GamePage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
+    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-800 relative">
       {!gameStarted ? (
         <>
           {/* Lobby vaade */}
