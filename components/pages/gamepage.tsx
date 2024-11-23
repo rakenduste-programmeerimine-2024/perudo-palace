@@ -91,7 +91,7 @@ const GamePage: React.FC = () => {
         id: index,
         name,
         bgImage: `/image/smile/smile${(index % 6) + 1}.jpg`, // Prgu käi lihtsalt pildid läbi
-        position: positions[index % positions.length], // Pane positsioonid
+        position: "", // Algselt pole kellelgil positsiooni
       }));
 
     socket.on("current-players", (playersList: string[]) => {
@@ -159,7 +159,7 @@ const GamePage: React.FC = () => {
 
       // Assign the current player to the clicked position
       return prevPlayers.map((player) => {
-        if (player.name === playerName) {
+        if (player.name === playerName && !player.position) {
           return { ...player, position: clickedPosition };
         }
         return player;
@@ -228,7 +228,7 @@ const GamePage: React.FC = () => {
                   className={getPositionClasses(position)}
                   onClick={() => handleAvatarClick(position)}
                   style={{
-                    cursor: gameStarted ? "default" : "pointer", // Show cursor pointer only if game hasn't started
+                    cursor: gameStarted ? "default" : "pointer",
                   }}
                 >
                   {playerInPosition ? (
@@ -238,7 +238,6 @@ const GamePage: React.FC = () => {
                       clickable={!gameStarted}
                     />
                   ) : (
-                    // Always show an empty slot if no player is in this position
                     <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
                       <Typography
                         variant="body1"
@@ -251,6 +250,19 @@ const GamePage: React.FC = () => {
                 </div>
               );
             })}
+            {/* Ootamisala, enne positsioonide valimist */}
+            <div className="absolute top-0 left-0 flex flex-col items-center space-y-4">
+              {players
+                .filter((player) => !player.position)
+                .map((player) => (
+                  <Player
+                    key={player.id}
+                    name={player.name}
+                    bgImage={player.bgImage}
+                    clickable={!gameStarted}
+                  />
+                ))}
+            </div>
           </div>
 
           {/* Start Game ja Leave nupp */}
