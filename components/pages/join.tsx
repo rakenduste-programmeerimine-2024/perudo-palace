@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { TextField, Button } from "@mui/material";
+import { SubmitButton } from "@/components/submit-button";
 import { useRouter } from "next/navigation";
 import io from "socket.io-client";
 
@@ -122,14 +123,13 @@ const Join: React.FC = () => {
           }}
         />
         {error && <p className="text-red-500">{error}</p>}
-        <Button
-          variant="contained"
-          fullWidth
-          className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
-          onClick={handleJoinRoom}
-        >
-          Join Game
-        </Button>
+        <SubmitButton
+        formAction={handleJoinRoom}
+        pendingText="Joining..."
+        className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
+      >
+        Join Game
+      </SubmitButton>
       </form>
     </div>
   );

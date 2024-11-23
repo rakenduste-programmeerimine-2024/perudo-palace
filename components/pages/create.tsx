@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { TextField, Button } from "@mui/material";
+import { SubmitButton } from "@/components/submit-button";
 import { useRouter } from "next/navigation";
 import io from "socket.io-client";
 
@@ -139,14 +140,13 @@ const Create: React.FC = () => {
   />
 
         {error && <p className="text-red-500">{error}</p>}
-        <Button
-          variant="contained"
-          fullWidth
+        <SubmitButton
+          formAction={handleCreateRoom}
+          pendingText="creating..."
           className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
-          onClick={handleCreateRoom}
         >
-          Create Game
-        </Button>
+        Create Game
+        </SubmitButton>
       </form>
     </div>
   );
