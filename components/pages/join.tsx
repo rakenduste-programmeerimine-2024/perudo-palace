@@ -8,7 +8,6 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:3030");
 
-//(sinisest roheliseni taust) bg-gradient-to-r from-cyan-700 to-green-700
 const Join: React.FC = () => {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
@@ -43,7 +42,7 @@ const Join: React.FC = () => {
 
     // addToDB();
   };
-
+  
   const addToDB = async () => {
     // player
     const { data: playerData, error: playerError } = await supabase
@@ -69,37 +68,69 @@ const Join: React.FC = () => {
         .insert([{ player_id: player_id, lobby_id: lobby_id }]);
   };
 
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900">
-      <h1 className="text-3xl font-bold mb-6">Perudo Palace Join Game</h1>
-      <div className="space-y-4 w-1/3">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
+      {/* Pealkiri */}
+      <div className="flex flex-col items-center justify-center mt-0">
+        <h1 className="text-4xl font-bold mb-6 text-center text-orange-500">
+          Perudo Palace
+        </h1>
+        <h2 className="text-2xl mb-8 text-center text-orange-400">
+          Join Game
+        </h2>
+      </div>
+
+      {/* Vorm */}
+      <form className="flex flex-col items-center justify-center w-full max-w-md space-y-4 bg-gray-900 p-8 rounded-md shadow-lg">
         <TextField
           label="Name"
           variant="outlined"
           fullWidth
-          className="bg-white rounded-md shadow"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
+          className="rounded-md text-orange-500 border-2 border-orange-500"
+          InputLabelProps={{
+            style: { color: "#FFA500" }, // Label värv
+          }}
+          InputProps={{
+            classes: {
+              notchedOutline: "border-orange-500 focus:border-orange-600", // Serva värvid
+            },
+            style: {
+              color: "#FFA500", // Sisestatud teksti värv
+            },
+          }}
         />
         <TextField
           label="Room code"
           variant="outlined"
           fullWidth
-          className="bg-white rounded-md shadow"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value)}
+          className="rounded-md text-orange-500 border-2 border-orange-500"
+          InputLabelProps={{
+            style: { color: "#FFA500" }, // Label värv
+          }}
+          InputProps={{
+            classes: {
+              notchedOutline: "border-orange-500 focus:border-orange-600",
+            },
+            style: {
+              color: "#FFA500", // Sisestatud teksti värv
+            },
+          }}
         />
         {error && <p className="text-red-500">{error}</p>}
         <Button
           variant="contained"
-          color="primary"
           fullWidth
-          className="mt-4"
+          className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
           onClick={handleJoinRoom}
         >
           Join Game
         </Button>
-      </div>
+      </form>
     </div>
   );
 };

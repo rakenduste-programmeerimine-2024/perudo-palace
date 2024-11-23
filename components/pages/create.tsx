@@ -85,40 +85,72 @@ const Create: React.FC = () => {
     }
     console.log("Added to database");
   };
-
+  
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 bg-cover bg-center">
-      <h1 className="text-3xl font-bold mb-6">Perudo Palace Create Game</h1>
-      <div className="space-y-4 w-1/3">
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth
-          className="bg-white rounded-md shadow"
-          value={hostName}
-          onChange={(e) => setHostName(e.target.value)}
-        />
-        <TextField
-          label="Room code"
-          variant="outlined"
-          fullWidth
-          className="bg-white rounded-md shadow"
-          value={roomCode}
-          onChange={(e) => setRoomCode(e.target.value)}
-        />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
+      {/* Pealkiri */}
+      <div className="flex flex-col items-center justify-center mt-0">
+        <h1 className="text-4xl font-bold mb-6 text-center text-orange-500">
+          Perudo Palace
+        </h1>
+        <h2 className="text-2xl mb-8 text-center text-orange-400">
+          Create Game
+        </h2>
+      </div>
+  
+      <form className="flex flex-col items-center justify-center w-full max-w-md space-y-4 bg-gray-900 p-8 rounded-md shadow-lg">
+  <TextField
+    label="Name"
+    variant="outlined"
+    fullWidth
+    value={hostName}
+    onChange={(e) => setHostName(e.target.value)}
+    className="rounded-md text-orange-500 border-2 border-orange-500"
+    InputLabelProps={{
+      style: { color: '#FFA500' }, // Label color
+    }}
+    InputProps={{
+      classes: {
+        notchedOutline: "border-orange-500 focus:border-orange-600", // Default and focus colors
+      },
+      style: {
+        color: '#FFA500', // Input text color
+      },
+    }}
+  />
+  <TextField
+    label="Room code"
+    variant="outlined"
+    fullWidth
+    value={roomCode}
+    onChange={(e) => setRoomCode(e.target.value)}
+    className="rounded-md text-orange-500 border-2 border-orange-500"
+    InputLabelProps={{
+      style: { color: '#FFA500' }, // Label color
+    }}
+    InputProps={{
+      classes: {
+        notchedOutline: "border-orange-500 focus:border-orange-600",
+      },
+      style: {
+        color: '#FFA500', // Input text color
+      },
+    }}
+  />
+
         {error && <p className="text-red-500">{error}</p>}
         <Button
           variant="contained"
-          color="primary"
           fullWidth
-          className="mt-4"
+          className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
           onClick={handleCreateRoom}
         >
           Create Game
         </Button>
-      </div>
+      </form>
     </div>
   );
+  
 };
 
 export default Create;
