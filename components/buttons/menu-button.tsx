@@ -10,8 +10,8 @@ const MenuButton: React.FC<MenuButtonProps> = ({ title, href }) => {
     return (
         <Link href={href} className="
             flex
-            bg-gray-500 
-            hover:bg-gray-600 
+            bg-orange-500 
+            hover:bg-orange-600 
             text-white
             w-64 h-20 
             items-center 
