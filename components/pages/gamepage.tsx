@@ -127,8 +127,8 @@ const GamePage: React.FC = () => {
       }));
     });
   };
-
-   const handleStartGame = (roomCode: number, players:[]) => {
+//vb roomCode on stringina mdea prg
+   const handleStartGame = (roomCode: number) => {
       try {
          setGameStarted(true);
          const newDiceImages = dicePositions.map(() => {
@@ -148,6 +148,16 @@ const GamePage: React.FC = () => {
          console.log("Placing bid...");
          console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
          socket.emit("placed-bid", { roomCode, diceAmount, diceValue });
+     } catch (error) {
+         console.error("Error placing bid:", error);
+     }
+   }
+};
+const handleBidCheck = async (response: boolean, roomCode: number) => {
+   if (isTurn){
+      try {
+         console.log("Challenging bid...");
+         socket.emit("check-bid", { response, roomCode });
      } catch (error) {
          console.error("Error placing bid:", error);
      }
@@ -176,7 +186,7 @@ const GamePage: React.FC = () => {
             <Button
               variant="contained"
               color="success"
-              onClick={handleStartGame}
+              onClick={() => handleStartGame(roomCode)}
               sx={{
                 padding: "1rem 2rem",
                 fontSize: "1.25rem",
@@ -288,7 +298,7 @@ const GamePage: React.FC = () => {
             ></div>
         </div>
         <button 
-         onClick={handlePlaceBid(roomCode, bidNumber, diceValue)} 
+         onClick={() => handlePlaceBid(roomCode, bidNumber, diceValue)}
          className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
             Place Bid
         </button>
@@ -297,7 +307,7 @@ const GamePage: React.FC = () => {
         <div className="absolute bottom-[7rem] left-[10rem] flex space-x-6 items-center">
           {/* Sword nupp ja tekst */}
           <div className="flex flex-col items-center">
-            <IconButton
+            <IconButton onClick={() => handleBidCheck(false, roomCode)}
               color="primary"
               sx={{
                 fontSize: 40,
@@ -323,7 +333,7 @@ const GamePage: React.FC = () => {
 
           {/* Arrow nupp ja tekst */}
           <div className="flex flex-col items-center">
-            <IconButton
+            <IconButton onClick={() => handleBidCheck(true, roomCode)}
               color="primary"
               sx={{
                 fontSize: 40,

@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
       console.log("Players in room when creating:", rooms[roomCode].players);
     }
   });
-
+   //Listenerid mängu loogika jaoks paigas
    socket.on("join-room", (roomCode, playerName) => {
       if (rooms[roomCode]) {
          rooms[roomCode].players.push(playerName);
@@ -79,10 +79,6 @@ io.on("connection", (socket) => {
          }
       }
    });
-
-   socket.on("pass-turn", (roomCode, diceAmount, dotAmount) =>
-    PassTurn(roomCode, diceAmount, dotAmount)
-   );
    socket.on("challange", (roomCode) => handleDiceCheck(roomCode));
    socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
    handleDiceBidSubmit(roomCode, diceAmount, diceValue);
@@ -90,6 +86,11 @@ io.on("connection", (socket) => {
    socket.on("game-start", ({ roomCode }) => {
       handleStartGame(roomCode);
    });
+   socket.on("check-bid", ({ response, roomCode }) => {
+      handleDiceCheck(response, roomCode);
+   });
+
+   //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
 });
 
 function PassTurn(roomId, diceAmount, dotAmount) {
