@@ -7,7 +7,7 @@ const io = new Server(3030, {
   },
 });
 
-let rooms = {};
+export let rooms = {};
 
 io.on("connection", (socket) => {
   console.log("serveriga ühendatud: " + socket.id);
@@ -34,59 +34,62 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join-room", (roomCode, playerName) => {
-    if (rooms[roomCode]) {
-      rooms[roomCode].players.push(playerName);
-      socket.join(roomCode);
-      io.to(roomCode).emit("current-players", rooms[roomCode].players);
-      io.to(roomCode).emit("player-joined", playerName);
-      console.log("Players in room when joining:", rooms[roomCode].players);
-    } else {
-      socket.emit("room-error", "Room does not exist.");
-    }
-  });
-
-  socket.on("update-room", (roomCode, playerName) => {
-    if (rooms[roomCode]) {
-      socket.join(roomCode);
-      io.to(roomCode).emit("current-players", rooms[roomCode].players);
-      io.to(roomCode).emit("player-joined", playerName);
-      console.log("Players in room when updating:", rooms[roomCode].players);
-    } else {
-      socket.emit("room-error", "Room does not exist.");
-    }
-  });
-
-  socket.on("leave-room", (roomCode, playerName) => {
-    console.log("user " + playerName + " left");
-    if (rooms[roomCode]) {
-      // Kustutab playeri ruumi listist
-      rooms[roomCode].players = rooms[roomCode].players.filter(
-        (player) => player !== playerName
-      );
-
-      io.to(roomCode).emit("player-left", playerName);
-      io.to(roomCode).emit("current-players", rooms[roomCode].players);
-
-      console.log("Kustutasin mängija");
-      console.log("Players in room before deletion:", rooms[roomCode].players);
-      console.log("Player count:", rooms[roomCode].players.length);
-
-      // Kui ruum on tühi, kustuta
-      if (rooms[roomCode].players.length == 0) {
-        delete rooms[roomCode];
-        console.log("room " + roomCode + " deleted");
+   socket.on("join-room", (roomCode, playerName) => {
+      if (rooms[roomCode]) {
+         rooms[roomCode].players.push(playerName);
+         socket.join(roomCode);
+         io.to(roomCode).emit("current-players", rooms[roomCode].players);
+         io.to(roomCode).emit("player-joined", playerName);
+         console.log("Players in room when joining:", rooms[roomCode].players);
+      } else {
+         socket.emit("room-error", "Room does not exist.");
       }
-    }
-  });
+   });
 
-  socket.on("pass-turn", (roomCode, diceAmount, dotAmount) =>
+   socket.on("update-room", (roomCode, playerName) => {
+      if (rooms[roomCode]) {
+         socket.join(roomCode);
+         io.to(roomCode).emit("current-players", rooms[roomCode].players);
+         io.to(roomCode).emit("player-joined", playerName);
+         console.log("Players in room when updating:", rooms[roomCode].players);
+      } else {
+         socket.emit("room-error", "Room does not exist.");
+      }
+   });
+
+   socket.on("leave-room", (roomCode, playerName) => {
+      console.log("user " + playerName + " left");
+      if (rooms[roomCode]) {
+         // Kustutab playeri ruumi listist
+         rooms[roomCode].players = rooms[roomCode].players.filter(
+         (player) => player !== playerName
+         );
+
+         io.to(roomCode).emit("player-left", playerName);
+         io.to(roomCode).emit("current-players", rooms[roomCode].players);
+
+         console.log("Kustutasin mängija");
+         console.log("Players in room before deletion:", rooms[roomCode].players);
+         console.log("Player count:", rooms[roomCode].players.length);
+
+         // Kui ruum on tühi, kustuta
+         if (rooms[roomCode].players.length == 0) {
+         delete rooms[roomCode];
+         console.log("room " + roomCode + " deleted");
+         }
+      }
+   });
+
+   socket.on("pass-turn", (roomCode, diceAmount, dotAmount) =>
     PassTurn(roomCode, diceAmount, dotAmount)
-  );
-  socket.on("challange", (roomCode) => handleDiceCheck(roomCode));
-  socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
+   );
+   socket.on("challange", (roomCode) => handleDiceCheck(roomCode));
+   socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
    handleDiceBidSubmit(roomCode, diceAmount, diceValue);
-});
+   });
+   socket.on("game-start", ({ roomCode }) => {
+      handleStartGame(roomCode);
+   });
 });
 
 function PassTurn(roomId, diceAmount, dotAmount) {

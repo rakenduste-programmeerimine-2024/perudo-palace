@@ -9,15 +9,18 @@ export const lives = Array(players.length).fill(3);
 //Aktiivse Bluffi objekt, jälgib ka kes tegi viimase bluffi indeksi
 export const activeBluff = {diceValue:1, diceAmount:1, playerIndex:0};
 
+//impordin serverist rooms objectid, et kõik sellege seotud funktsioonid töötaksid
+import { rooms } from '../server'
+
 //Ütleb kellel on turn, teeb kõik täringu veeretused
-export function handleGameStart() {  
-   turns = Array(players.length).fill(false);
-   dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
-   lives = Array(players.length).fill(3);
+export function handleGameStart(roomCode) {  
+   rooms[roomCode].turns = Array(rooms[roomCode].players.length).fill(false);
+   rooms[roomCode].dice = Array(rooms[roomCode].players.length).fill(null).map(() => Array(4).fill(1));
+   rooms[roomCode].lives = Array(rooms[roomCode].players.length).fill(3);
    //Kõikidele mängjatele täringute veeretamine
-   handleDiceRolls(dice);
+   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
    //Mängu alguse turni seadmine
-   handleTurns(turns);
+   rooms[roomCode].turns = handleTurns(rooms[roomCode].turns);
 }
 //Muudab kelle turn on olenevat sellest kelle turn prg on
 export function handleTurns(turnArray) {

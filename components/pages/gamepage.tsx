@@ -1,11 +1,10 @@
-"use client";
-
+"use client"
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { io } from 'socket.io-client';
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const socket = io("http://localhost:3030");
 
@@ -65,18 +64,27 @@ const dicePositions = [
 
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
-  const [gameStarted, setGameStarted] = useState(false);
-
-  const [players, setPlayers] = useState([
-    { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
-    { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
-    { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
-    { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
-  ]);
-
+   //laenan oskari branchist koodi
+   const [gameStarted, setGameStarted] = useState(false);
+   const router = useRouter();
+   const searchParams = useSearchParams();
+   const roomCode = searchParams.get("roomCode");
+   const playerName = searchParams.get("playerName");
+   const [players, setPlayers] = useState<
+    { id: number; name: string; bgImage: string; position: string }[]
+  >([]);
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
+
+//   const [players, setPlayers] = useState([
+//     { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
+//     { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
+//     { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
+//     { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
+//   ]);
+
+
 
 
   // Hoia täringute pildid seisundis
@@ -120,19 +128,21 @@ const GamePage: React.FC = () => {
     });
   };
 
-  const handleStartGame = () => {
-   try {
-      setGameStarted(true);
-      const newDiceImages = dicePositions.map(() => {
-        const diceNumber = Math.floor(Math.random() * 6) + 1;
-        return `/image/w_dice/dice${diceNumber}.png`;
-      });
-      setRandomDiceImages(newDiceImages);
-   } catch (error) {
-      console.error("Error placing bid:", error);
-}
-  };
-  const handlePlaceBid = async (roomCode, diceAmount: number, diceValue: number) => {
+   const handleStartGame = (roomCode: number, players:[]) => {
+      try {
+         setGameStarted(true);
+         const newDiceImages = dicePositions.map(() => {
+         const diceNumber = Math.floor(Math.random() * 6) + 1;
+         return `/image/w_dice/dice${diceNumber}.png`;
+         });
+         setRandomDiceImages(newDiceImages);
+         socket.emit("game-start", { roomCode });
+      } catch (error) {
+         console.error("Error placing bid:", error);
+      }
+   };
+
+  const handlePlaceBid = async (roomCode: number, diceAmount: number, diceValue: number) => {
    if (isTurn){
       try {
          console.log("Placing bid...");
@@ -142,8 +152,8 @@ const GamePage: React.FC = () => {
          console.error("Error placing bid:", error);
      }
    }
-
 };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
       {!gameStarted ? (
@@ -278,7 +288,7 @@ const GamePage: React.FC = () => {
             ></div>
         </div>
         <button 
-         onClick={handlePlaceBid(setBidNumber,setDiceValue)} 
+         onClick={handlePlaceBid(roomCode, bidNumber, diceValue)} 
          className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
             Place Bid
         </button>
