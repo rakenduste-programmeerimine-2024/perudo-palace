@@ -1,4 +1,4 @@
-import { handleGameStart,handleTurns ,handlePlayerDeath,handleDiceCheck, handleDiceBidSubmit, handleDiceRolls, checkGameOver,handlePlayerDeath} from './gameLogicScript.js';
+import { handleGameStart, handleTurns, handlePlayerDeath, handleDiceCheck, handleDiceBidSubmit, handleDiceRolls, checkGameOver, handlePlayerDeath} from './gameLogicScript.js';
 const { Server } = require("socket.io");
 
 const io = new Server(3030, {
@@ -81,10 +81,10 @@ io.on("connection", (socket) => {
    });
    socket.on("challange", (roomCode) => handleDiceCheck(roomCode));
    socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
-   handleDiceBidSubmit(roomCode, diceAmount, diceValue);
+      handleDiceBidSubmit(roomCode, diceAmount, diceValue);
    });
    socket.on("game-start", ({ roomCode }) => {
-      handleStartGame(roomCode);
+      handleGameStart(roomCode);
    });
    socket.on("check-bid", ({ response, roomCode }) => {
       handleDiceCheck(response, roomCode);
