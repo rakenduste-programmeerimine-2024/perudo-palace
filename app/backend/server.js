@@ -83,8 +83,10 @@ io.on("connection", (socket) => {
   socket.on("pass-turn", (roomCode, diceAmount, dotAmount) =>
     PassTurn(roomCode, diceAmount, dotAmount)
   );
-  socket.on("challange", (roomCode) => Challange(roomCode));
-  socket.on("placed-bid", (roomCode) => handleDiceBidSubmit(roomCode))
+  socket.on("challange", (roomCode) => handleDiceCheck(roomCode));
+  socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
+   handleDiceBidSubmit(roomCode, diceAmount, diceValue);
+});
 });
 
 function PassTurn(roomId, diceAmount, dotAmount) {

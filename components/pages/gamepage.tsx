@@ -132,12 +132,12 @@ const GamePage: React.FC = () => {
       console.error("Error placing bid:", error);
 }
   };
-  const handlePlaceBid = async (diceAmount: number, diceValue: number) => {
+  const handlePlaceBid = async (roomCode, diceAmount: number, diceValue: number) => {
    if (isTurn){
       try {
          console.log("Placing bid...");
          console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
-         socket.emit("placed-bid")
+         socket.emit("placed-bid", { roomCode, diceAmount, diceValue });
      } catch (error) {
          console.error("Error placing bid:", error);
      }
