@@ -152,17 +152,17 @@ const GamePage: React.FC = () => {
          console.error("Error placing bid:", error);
      }
    }
-};
-const handleBidCheck = async (response: boolean, roomCode: number) => {
-   if (isTurn){
-      try {
-         console.log("Challenging bid...");
-         socket.emit("check-bid", { response, roomCode });
-     } catch (error) {
-         console.error("Error placing bid:", error);
-     }
-   }
-};
+   };
+   const handleBidCheck = async (response: boolean, roomCode: number) => {
+      if (isTurn){
+         try {
+            console.log("Challenging bid...");
+            socket.emit("check-bid", { response, roomCode });
+      } catch (error) {
+            console.error("Error placing bid:", error);
+      }
+      }
+   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">

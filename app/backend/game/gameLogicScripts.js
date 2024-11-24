@@ -128,7 +128,7 @@ export function checkGameOver() {
 }
 //Kui mängjal on elud 0 siis võtame ta mängu loogikast välja 
 export function handlePlayerDeath(i){
-   console.log(`Player ${players[i]} has been eliminated.`);
+   console.log(`Player ${rooms[roomCode].players[i]} has been eliminated.`);
 
    rooms[roomCode].turns.splice(i, 1);
    rooms[roomCode].dice.splice(i, 1);

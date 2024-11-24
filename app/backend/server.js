@@ -89,8 +89,8 @@ io.on("connection", (socket) => {
    socket.on("check-bid", ({ response, roomCode }) => {
       handleDiceCheck(response, roomCode);
    });
-
    //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
+   socket.emit("lives")
 });
 
 function PassTurn(roomId, diceAmount, dotAmount) {
