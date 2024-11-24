@@ -3,9 +3,45 @@
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { io } from 'socket.io-client';
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
+const socket = io("http://localhost:3030");
+
+//otse create koodist
+// const [hostName, setHostName] = useState("");
+// const [roomCode, setRoomCode] = useState("");
+// const [error, setError] = useState("");
+// const router = useRouter();
+// const supabase = createClient();
+// const [socketId, setSocketId] = useState<string>("");
+
+// useEffect(() => {
+//    socket.on("connect", () => {
+//      console.log("Connected to socket server, socket ID:", socket.id);
+     
+//      setSocketId(socket.id as string);
+//    });
+
+//    socket.on("room-error", (message) => {
+//      setError(message);
+//    });
+
+//    socket.on("room-created", (roomCode) => {
+//      router.push(`/room?roomCode=${roomCode}&playerName=${hostName}`);
+//    });
+
+//    return () => {
+//      socket.off("connect");
+//      socket.off("room-error");
+//      socket.off("room-created");
+//    };
+//  }, [router, hostName]);
+//lõpp
+
+//Täringute asetamine ekraanil
 const dicePositions = [
-    // Define täringu positsioonid
     { top: "43%", left: "10%" },//vasak
     { top: "55%", left: "10%" },//vasak
     { top: "43%", left: "16%" },//vasak
@@ -27,6 +63,7 @@ const dicePositions = [
     { bottom: "35%", right: "16%" },//parem
   ];
 
+//Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
 
@@ -39,6 +76,7 @@ const GamePage: React.FC = () => {
 
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
+  const [isTurn, setIsTurn] = useState(false);
 
 
   // Hoia täringute pildid seisundis
@@ -83,14 +121,29 @@ const GamePage: React.FC = () => {
   };
 
   const handleStartGame = () => {
-    setGameStarted(true);
-    const newDiceImages = dicePositions.map(() => {
-      const diceNumber = Math.floor(Math.random() * 6) + 1;
-      return `/image/w_dice/dice${diceNumber}.png`;
-    });
-    setRandomDiceImages(newDiceImages);
+   try {
+      setGameStarted(true);
+      const newDiceImages = dicePositions.map(() => {
+        const diceNumber = Math.floor(Math.random() * 6) + 1;
+        return `/image/w_dice/dice${diceNumber}.png`;
+      });
+      setRandomDiceImages(newDiceImages);
+   } catch (error) {
+      console.error("Error placing bid:", error);
+}
   };
+  const handlePlaceBid = async (diceAmount: number, diceValue: number) => {
+   if (isTurn){
+      try {
+         console.log("Placing bid...");
+         console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
+         socket.emit("placed-bid")
+     } catch (error) {
+         console.error("Error placing bid:", error);
+     }
+   }
 
+};
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-green-900 relative">
       {!gameStarted ? (
@@ -224,7 +277,9 @@ const GamePage: React.FC = () => {
             }}
             ></div>
         </div>
-        <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
+        <button 
+         onClick={handlePlaceBid(setBidNumber,setDiceValue)} 
+         className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
             Place Bid
         </button>
         </div>
@@ -287,7 +342,7 @@ const GamePage: React.FC = () => {
     </div>
   );
 };
-
+//CSS
 const getPositionClasses = (position: string) => {
   switch (position) {
     case "left":
@@ -302,7 +357,7 @@ const getPositionClasses = (position: string) => {
       return "";
   }
 };
-
+//Mängjate profiilid
 interface PlayerProps {
   name: string;
   bgImage: string;

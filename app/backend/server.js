@@ -1,3 +1,4 @@
+import { handleGameStart,handleTurns ,handlePlayerDeath,handleDiceCheck, handleDiceBidSubmit, handleDiceRolls, checkGameOver,handlePlayerDeath} from './gameLogicScript.js';
 const { Server } = require("socket.io");
 
 const io = new Server(3030, {
@@ -19,7 +20,14 @@ io.on("connection", (socket) => {
     if (rooms[roomCode]) {
       socket.emit("room-error", "Room with that code already exists.");
     } else {
-      rooms[roomCode] = { host: hostName, players: [hostName] };
+      //Teeb kõik vajalikud muutjad mängu ja lobby jaoks
+      rooms[roomCode] = { 
+         host: hostName, 
+         players: [hostName], 
+         turns: null, 
+         dice: null, 
+         lives: null, 
+         activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 }};
       socket.join(roomCode);
       socket.emit("room-created", roomCode);
       console.log("Players in room when creating:", rooms[roomCode].players);
@@ -72,10 +80,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>
-    PassTurn(roomId, diceAmount, dotAmount)
+  socket.on("pass-turn", (roomCode, diceAmount, dotAmount) =>
+    PassTurn(roomCode, diceAmount, dotAmount)
   );
-  socket.on("challange", (roomId) => Challange(roomId));
+  socket.on("challange", (roomCode) => Challange(roomCode));
+  socket.on("placed-bid", (roomCode) => handleDiceBidSubmit(roomCode))
 });
 
 function PassTurn(roomId, diceAmount, dotAmount) {
@@ -121,3 +130,5 @@ function Challange(roomId) {
 
   io.to(roomId).emit("updateRoom", room);
 }
+
+

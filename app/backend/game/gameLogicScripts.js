@@ -1,26 +1,26 @@
 //Mängjate array, mis tuleb serverisse lykkata rav, mille täidad socketio'ga lobby kaudu. Selle järgi on ka kõik muud mängu loogika jaoks vajalikud arrayd mängjate arvuga sobivalt täidetud loodetavasti.
-const players = ["Player1","Player2","Player3","Player4"];
+export const players = ["Player1","Player2","Player3","Player4"];
 //siin sama lugu, et jälgida kelle mängija turn on
-const turns = Array(players.length).fill(false);
+export const turns = Array(players.length).fill(false);
 //siin sama lugu, et jälgida iga mängjia täringud
-const dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
+export const dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
 //Elude jälgimine
-const lives = Array(players.length).fill(3);
+export const lives = Array(players.length).fill(3);
 //Aktiivse Bluffi objekt, jälgib ka kes tegi viimase bluffi indeksi
-const activeBluff = {diceValue:1, diceAmount:1, playerIndex:0};
+export const activeBluff = {diceValue:1, diceAmount:1, playerIndex:0};
 
 //Ütleb kellel on turn, teeb kõik täringu veeretused
-function handleGameStart() {  
+export function handleGameStart() {  
+   turns = Array(players.length).fill(false);
+   dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
+   lives = Array(players.length).fill(3);
    //Kõikidele mängjatele täringute veeretamine
    handleDiceRolls(dice);
    //Mängu alguse turni seadmine
    handleTurns(turns);
-   turns = Array(players.length).fill(false);
-   dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
-   lives = Array(players.length).fill(3);
 }
 //Muudab kelle turn on olenevat sellest kelle turn prg on
-function handleTurns(turnArray) {
+export function handleTurns(turnArray) {
    for (let i = 0; i < turnArray.length; i++) {
       // Mängu algus: paned 1. mängja käigu trueks
       if (!turnArray.includes(true)) {
@@ -45,7 +45,7 @@ function handleTurns(turnArray) {
 }
 
 //Kui mängija otsustab callida bluffi tõeseks või valeks, kontrollib üle kõik täringud, et kas see ühtib bluffiga
-function handleDiceCheck(response, diceArray, diceValue, diceAmount){
+export function handleDiceCheck(response, diceArray, diceValue, diceAmount){
    let diceCounter = 0;
    //Käib läbi kõik täringud ja loetab, mitu kindlat täringut on
    for (let i = 0; i < diceArray.length; i++) {
@@ -83,25 +83,25 @@ function handleDiceCheck(response, diceArray, diceValue, diceAmount){
   }
 }
 
-//Mängjia paneb enda käigu ajal mitu, missugust täringut on laual kokku tema arust. Need params väärtused tuleksid frontendist kust seda bluffi submititakse
-function handleDiceBluffSubmit(diceValue, diceAmount) {
+//Mängjia paneb enda käigu ajal mitu, missugust täringut on laual kokku tema arust. Need params väärtused tuleksid frontendist kust seda Bidi submititakse
+export function handleDiceBidSubmit(roomCode, diceValue, diceAmount) {
    for (let i = 0; i < turns.length; i++) {
       if(turns[i] === true){
          playerIndex = i;
          break;
       }
    }
-   //Määrab, mis bluff on prg laual (mitu täringut keegi (viimasena) arvab, et on laual prg)
+   //Määrab, mis Bid on prg laual (mitu täringut keegi (viimasena) arvab, et on laual prg)
    //Mis täringu väärtus (1,2,3,4,5,6)
-   activeBluff.diceValue = diceValue;
+   rooms[roomCode].activeBid.diceValue = diceValue;
    //Mitu seda täringut arvatakse et on laual
-   activeBluff.diceAmount = diceAmount;
-   activeBluff.playerIndex = playerIndex;
+   rooms[roomCode].activeBid.diceAmount = diceAmount;
+   rooms[roomCode].activeBid.playerIndex = playerIndex;
    handleTurns(turns);
 }
 
 //Veeretab mängu alguses, või kui round saab lõbi igale mängjale täringud.
-function handleDiceRolls(diceArray){
+export function handleDiceRolls(diceArray){
    for (let i = 0; i < diceArray.length; i++) {
       for (let j = 0; j < diceArray[i].length; j++) {
           diceArray[i][j] = Math.floor(Math.random() * 6) + 1;
@@ -110,7 +110,7 @@ function handleDiceRolls(diceArray){
   return diceArray;
 }
 // Vaatab kas mäng peaks läbi olema (ainult üks mängija on elus)
-function checkGameOver() {
+export function checkGameOver() {
    const activePlayers = lives.filter(life => life > 0).length;
 
    if (activePlayers === 1) {
@@ -119,7 +119,7 @@ function checkGameOver() {
    }
 }
 //Kui mängjal on elud 0 siis võtame ta mängu loogikast välja 
-function handlePlayerDeath(i){
+export function handlePlayerDeath(i){
    console.log(`Player ${players[i]} has been eliminated.`);
 
    turns.splice(i, 1);
