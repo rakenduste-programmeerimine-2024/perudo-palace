@@ -39,6 +39,41 @@ const socket = io("http://localhost:3030");
 //  }, [router, hostName]);
 //lõpp
 
+// display all players dices
+socket.on("display-all-dices", (dice) => {
+  
+});
+
+// hide all dices
+socket.on("hide-all-dices", () => {
+  
+});
+
+// display this player dices
+socket.on("display-player-dices", (userId) => {
+  
+});
+
+// display all hearts (minus need mis on maha lainud)
+socket.on("display-hearts", (lives) => {
+  
+});
+
+// display hetkest turni
+socket.on("display-turn", (turns) => {
+  
+});
+
+// display hetkest turni
+socket.on("display-current-bid", (activeBid) => {
+  
+});
+
+// display current action
+socket.on("display-current-bid", () => {
+  
+});
+
 //Täringute asetamine ekraanil
 const dicePositions = [
     { top: "43%", left: "10%" },//vasak

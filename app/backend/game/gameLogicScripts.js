@@ -1,15 +1,22 @@
-//Mängjate array, mis tuleb serverisse lykkata rav, mille täidad socketio'ga lobby kaudu. Selle järgi on ka kõik muud mängu loogika jaoks vajalikud arrayd mängjate arvuga sobivalt täidetud loodetavasti.
+//Mängjate array, mis tuleb serverisse lykkata rav, mille täidad socketio'ga lobby kaudu. 
+//Selle järgi on ka kõik muud mängu loogika jaoks vajalikud arrayd mängjate arvuga sobivalt täidetud loodetavasti.
 export const players = ["Player1","Player2","Player3","Player4"];
+
 //siin sama lugu, et jälgida kelle mängija turn on
 export const turns = Array(players.length).fill(false);
+
 //siin sama lugu, et jälgida iga mängjia täringud
 export const dice = Array(players.length).fill(null).map(() => Array(4).fill(1));
+
 //Elude jälgimine
 export const lives = Array(players.length).fill(3);
-//Aktiivse Bluffi objekt, jälgib ka kes tegi viimase bluffi indeksi
+
+//Aktiivse Bluffi objekt, 
+//jälgib ka kes tegi viimase bluffi indeksi
 export const activeBluff = {diceValue:1, diceAmount:1, playerIndex:0};
 
-//impordin serverist rooms objectid, et kõik sellege seotud funktsioonid töötaksid
+//impordin serverist rooms objectid, 
+//et kõik sellege seotud funktsioonid töötaksid
 import { rooms } from '../server'
 
 //Ütleb kellel on turn, teeb kõik täringu veeretused
@@ -24,6 +31,7 @@ export function handleGameStart(roomCode) {
    //Mängu alguse turni seadmine
    rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
 }
+
 //Muudab kelle turn on olenevat sellest kelle turn prg on
 export function handleTurns(turnArray, roomCode) {
    for (let i = 0; i < turnArray.length; i++) {
@@ -49,7 +57,8 @@ export function handleTurns(turnArray, roomCode) {
    return turnArray;
 }
 
-//Kui mängija otsustab callida bluffi tõeseks või valeks, kontrollib üle kõik täringud, et kas see ühtib bluffiga
+//Kui mängija otsustab callida bluffi tõeseks või valeks, 
+//kontrollib üle kõik täringud, et kas see ühtib bluffiga
 export function handleDiceCheck(response, roomCode){
    let diceCounter = 0;
    //Käib läbi kõik täringud ja loetab, mitu kindlat täringut on
@@ -79,18 +88,20 @@ export function handleDiceCheck(response, roomCode){
   else{
    if (response === false){
       rooms[roomCode].lives[lastBidder]--;
-      if(rooms[roomCode].lives[lastBidder]== 0){handlePlayerDeath(lastBidder)}
+      if(rooms[roomCode].lives[lastBidder]== 0) { handlePlayerDeath(lastBidder) }
    }
    else{
       rooms[roomCode].lives[checkerPlayer]--;
-      if(rooms[roomCode].lives[checkerPlayer] == 0){handlePlayerDeath(checkerPlayer)}
+      if(rooms[roomCode].lives[checkerPlayer] == 0) { handlePlayerDeath(checkerPlayer) }
    }
   }
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
   rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
 }
 
-//Mängjia paneb enda käigu ajal mitu, missugust täringut on laual kokku tema arust. Need params väärtused tuleksid frontendist kust seda Bidi submititakse
+//Mängjia paneb enda käigu ajal mitu, 
+//missugust täringut on laual kokku tema arust. 
+//Need params väärtused tuleksid frontendist kust seda Bidi submititakse
 export function handleDiceBidSubmit(roomCode, diceValue, diceAmount) {
    for (let i = 0; i < rooms[roomCode].turns.length; i++) {
       if(turns[i] === true){
@@ -108,7 +119,8 @@ export function handleDiceBidSubmit(roomCode, diceValue, diceAmount) {
    rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
 }
 
-//Veeretab mängu alguses, või kui round saab lõbi igale mängjale täringud.
+//Veeretab mängu alguses, 
+//või kui round saab lõbi igale mängjale täringud.
 export function handleDiceRolls(diceArray){
    for (let i = 0; i < diceArray.length; i++) {
       for (let j = 0; j < diceArray[i].length; j++) {
