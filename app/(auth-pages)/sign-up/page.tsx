@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
+import BackButton from "@/components/buttons/back-button";
 
 export default async function Signup(props: { searchParams: Promise<Message> }) {
   const searchParams = await props.searchParams;
@@ -78,6 +79,8 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
         <FormMessage message={searchParams} />
       </form>
       <SmtpMessage />
+            {/* Tagasi nupp */}
+        <BackButton href="/" />
     </div>
   );
 }

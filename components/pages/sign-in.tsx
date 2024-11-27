@@ -44,9 +44,7 @@ export default async function LoginPage(props: { searchParams: Promise<Message> 
         </div>
       </form>
       {/* Tagasi nupp */}
-      <div className="absolute bottom-0 left-0 mb-4 ml-4 py-2 px-4 rounded">
         <BackButton href="/" />
-      </div>
     </div>
   );
 }

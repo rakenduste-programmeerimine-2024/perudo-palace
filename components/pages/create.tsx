@@ -6,6 +6,7 @@ import { TextField, Button } from "@mui/material";
 import { SubmitButton } from "@/components/submit-button";
 import { useRouter } from "next/navigation";
 import io from "socket.io-client";
+import BackButton from "@/components/buttons/back-button";
 
 const socket = io("http://localhost:3030");
 
@@ -148,6 +149,8 @@ const Create: React.FC = () => {
         Create Game
         </SubmitButton>
       </form>
+      {/* Tagasi nupp */}
+      <BackButton href="/" />
     </div>
   );
   
