@@ -1,5 +1,10 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Lisatud ikoon MUI-st
+
 const Rules: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800 p-6">
@@ -11,7 +16,7 @@ const Rules: React.FC = () => {
       {/* Reeglite konteiner */}
       <div className="max-w-4xl w-full bg-gray-900 p-8 rounded-md shadow-lg space-y-6 text-orange-400">
         <p className="text-lg text-center">
-         Perudo Palace on täringumäng, mis põhineb bluffimisel ja strateegial.
+          Perudo Palace on täringumäng, mis põhineb bluffimisel ja strateegial.
           Mängijad teevad oletusi selle kohta, mitu konkreetse väärtusega täringut on kõigi mängijate seas kokku.
         </p>
 
@@ -34,7 +39,8 @@ const Rules: React.FC = () => {
               Mängu eesmärk
             </h2>
             <p>
-              Olla viimane mängija, kellel on veel elud alles. Mäng lõppeb, kui kõik teised mängijad kaotavad oma viimase elu (südame).
+              Olla viimane mängija, kellel on veel elud alles. Mäng lõppeb, kui kõik teised mängijad kaotavad oma viimase elu
+              <FavoriteIcon key="heart" className="text-red-800 inline-block align-middle" />.
             </p>
           </div>
 
@@ -77,10 +83,27 @@ const Rules: React.FC = () => {
             <h2 className="text-2xl font-semibold text-orange-500 mb-2">
               Kutsumine ("Call Bluff")
             </h2>
-            <p>
-              Kui mängija ei usu eelmist pakkumist, võib ta öelda: "Vale!" vajutades mõõgale (challange). Seejärel kõik mängijad paljastavad oma täringutulemused.
+            <p className="flex items-center">
+              Kui mängija usub eelmist pakkumist, võib ta öelda: "Tõsi!" vajutades vibule.
+              <Image
+                src="/image/arrow.png"
+                alt="Vibu"
+                width={50}
+                height={50}
+                className="ml-2 cursor-pointer"
+              />
             </p>
-            <ul className="list-disc list-inside">
+            <p className="flex items-center mt-2">
+              Kui mängija ei usu eelmist pakkumist, võib ta öelda: "Vale!" vajutades mõõgale.
+              <Image
+                src="/image/sword.png"
+                alt="Mõõk"
+                width={50}
+                height={50}
+                className="ml-2 cursor-pointer"
+              />
+            </p>
+            <ul className="list-disc list-inside mt-4">
               <li>
                 Kui pakkumine oli tõene (täringute arv vastas või ületas pakkumist), kaotab kutsuja ühe elu.
               </li>
@@ -101,19 +124,6 @@ const Rules: React.FC = () => {
             </ul>
           </div>
 
-          {/* Erireegel: Ühed ("Wild Ones") */}
-          <div>
-            <h2 className="text-2xl font-semibold text-orange-500 mb-2">
-              Erireegel: Ühed ("Wild Ones")
-            </h2>
-            <p>
-              "1" täringut loetakse jokkeriks ja see loeb igasse pakkumisse.
-            </p>
-            <p>
-              Näiteks: Kui pakkumine oli "kolm nelja" ja tulemus oli "2 nelja ja 1 üks", loetakse see vastavaks.
-            </p>
-          </div>
-
           {/* Lõpp ja võitja */}
           <div>
             <h2 className="text-2xl font-semibold text-orange-500 mb-2">
@@ -125,6 +135,15 @@ const Rules: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Back nupp */}
+      <Link
+        href="/"
+        className="fixed bottom-4 left-4 flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-orange-600 transition"
+      >
+        <ArrowBackIcon className="text-white" />
+        <span>Back</span>
+      </Link>
     </div>
   );
 };
