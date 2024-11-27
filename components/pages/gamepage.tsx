@@ -41,33 +41,6 @@ const GamePage: React.FC = () => {
     { id: number; name: string; bgImage: string; position: string }[]
   >([]);
 
-  // const [players, setPlayers] = useState([
-  //   {
-  //     id: 1,
-  //     name: "Player 1",
-  //     bgImage: "url('/image/smile/smile.jpg')",
-  //     position: "bottom",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Player 2",
-  //     bgImage: "url('/image/smile/smile2.jpg')",
-  //     position: "right",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Player 3",
-  //     bgImage: "url('/image/smile/smile5.jpg')",
-  //     position: "top",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Player 4",
-  //     bgImage: "url('/image/smile/smile6.jpg')",
-  //     position: "left",
-  //   },
-  // ]);
-
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
 
@@ -82,10 +55,6 @@ const GamePage: React.FC = () => {
     }
 
     socket.emit("update-room", roomCode);
-
-    socket.on("update-positions", (updatedPlayers) => {
-      setPlayers(updatedPlayers);
-    });
 
     // Update'i mängijaid
     const positions = ["bottom", "right", "top", "left"];
@@ -117,6 +86,19 @@ const GamePage: React.FC = () => {
           .filter((name) => name !== leftPlayerName);
         return assignPlayerData(updatedPlayers);
       });
+    });
+
+    socket.on("update-positions", (updatedPositions) => {
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((player, index) => {
+          const positionKey = `position${index + 1}`;
+          const newPosition = updatedPositions[positionKey];
+          return {
+            ...player,
+            position: newPosition || "",
+          };
+        })
+      );
     });
 
     return () => {
@@ -152,15 +134,13 @@ const GamePage: React.FC = () => {
   const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
 
-    console.log("mängijate list: " + JSON.stringify(players));
-
-    // Check if position is already taken by another player
+    // Check, kas kooht on võetud
     const positionTaken = players.some(
       (player) => player.position === clickedPosition
     );
 
     if (positionTaken) {
-      return; // If the position is taken, do nothing
+      return;
     }
 
     // serverisse ka positisiooniinfo et teistel ka sync'iksid
@@ -172,7 +152,7 @@ const GamePage: React.FC = () => {
 
     setPlayers((prevPlayers) =>
       prevPlayers.map((player) =>
-        player.name === playerName && !player.position
+        player.name === playerName
           ? { ...player, position: clickedPosition }
           : player
       )
@@ -217,9 +197,9 @@ const GamePage: React.FC = () => {
           {/* Lobby vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {["bottom", "right", "top", "left"].map((position) => {
-              const playerInPosition = Array.isArray(players)
-                ? players.find((player) => player.position === position)
-                : null;
+              const playerInPosition = players.find(
+                (player) => player.position === position
+              );
 
               return (
                 <div
@@ -252,7 +232,7 @@ const GamePage: React.FC = () => {
             {/* Ootamisala, enne positsioonide valimist */}
             <div className="absolute top-0 left-0 flex flex-col items-center space-y-4">
               {players
-                .filter((player) => !player.position) // Only players without a position
+                .filter((player) => !player.position)
                 .map((player) => (
                   <Player
                     key={player.id}

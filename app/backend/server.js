@@ -100,19 +100,17 @@ io.on("connection", (socket) => {
 
     const positionKey = `position${playerIndex + 1}`;
 
-    // Check if position is already taken
+    // Check kas positsioon on võetud
     if (Object.values(room.positions).includes(position)) {
       socket.emit("position-error", "Position already taken.");
       return;
     }
 
-    // Assign the position
+    // Assign'i positsioon'id
     room.positions[positionKey] = position;
 
-    // Emit updated positions to the room
+    // saada positsioonid lobby'sse
     io.to(roomCode).emit("update-positions", room.positions);
-
-    console.log(`Updated positions for room ${roomCode}:`, room.positions);
   });
 
   socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>
