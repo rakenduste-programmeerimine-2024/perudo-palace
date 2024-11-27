@@ -31,6 +31,7 @@ io.on("connection", (socket) => {
       };
       socket.join(roomCode);
       socket.emit("room-created", roomCode);
+      io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when creating:", rooms[roomCode].players);
     }
   });
@@ -43,6 +44,7 @@ io.on("connection", (socket) => {
       socket.join(roomCode);
       io.to(roomCode).emit("current-players", rooms[roomCode].players);
       io.to(roomCode).emit("player-joined", playerName);
+      io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when joining:", rooms[roomCode].players);
     } else {
       socket.emit("room-error", "Room does not exist.");
@@ -111,6 +113,10 @@ io.on("connection", (socket) => {
 
     // saada positsioonid lobby'sse
     io.to(roomCode).emit("update-positions", room.positions);
+  });
+
+  socket.on("start-game", (roomCode) => {
+    io.to(roomCode).emit("start-game");
   });
 
   socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>

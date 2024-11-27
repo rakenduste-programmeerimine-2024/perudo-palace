@@ -37,6 +37,7 @@ const GamePage: React.FC = () => {
   const searchParams = useSearchParams();
   const roomCode = searchParams.get("roomCode");
   const playerName = searchParams.get("playerName");
+  const [isHost, setIsHost] = useState(false);
   const [players, setPlayers] = useState<
     { id: number; name: string; bgImage: string; position: string }[]
   >([]);
@@ -46,6 +47,21 @@ const GamePage: React.FC = () => {
 
   // Hoia täringute pildid seisundis
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    socket.on("start-game", () => {
+      setGameStarted(true);
+    });
+
+    socket.on("room-host", (hostName: string) => {
+      setIsHost(hostName === playerName);
+    });
+
+    return () => {
+      socket.off("start-game");
+      socket.off("room-host");
+    };
+  }, []);
 
   // Ruumi loogika useEffect eraldi
   useEffect(() => {
@@ -160,6 +176,15 @@ const GamePage: React.FC = () => {
   };
 
   const handleStartGame = () => {
+    const playersWithoutPosition = players.filter((player) => !player.position);
+
+    if (playersWithoutPosition.length > 0) {
+      alert("All players must select a position before starting the game.");
+      return;
+    }
+
+    socket.emit("start-game", roomCode);
+
     const order = ["bottom", "right", "top", "left"];
 
     // Ensure all players have a position and establish the playing order
@@ -176,6 +201,7 @@ const GamePage: React.FC = () => {
       return `/image/w_dice/dice${diceNumber}.png`;
     });
     setRandomDiceImages(newDiceImages);
+
     // setGameStarted(true);
     // const newDiceImages = dicePositions.map(() => {
     //   const diceNumber = Math.floor(Math.random() * 6) + 1;
@@ -246,22 +272,27 @@ const GamePage: React.FC = () => {
 
           {/* Start Game ja Leave nupp */}
           <div className="absolute bottom-[10rem] right-[5rem]">
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleStartGame}
-              sx={{
-                padding: "1rem 2rem",
-                fontSize: "1.25rem",
-                fontWeight: "bold",
-                backgroundColor: "#4CAF50",
-                "&:hover": {
-                  backgroundColor: "#45A049",
-                },
-              }}
-            >
-              START GAME
-            </Button>
+            {!isHost ? (
+              <p>Waiting for the host to start the game...</p>
+            ) : (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleStartGame}
+                sx={{
+                  padding: "1rem 2rem",
+                  fontSize: "1.25rem",
+                  fontWeight: "bold",
+                  backgroundColor: "#4CAF50",
+                  "&:hover": {
+                    backgroundColor: "#45A049",
+                  },
+                }}
+              >
+                START GAME
+              </Button>
+            )}
+
             <Button
               variant="contained"
               color="success"
