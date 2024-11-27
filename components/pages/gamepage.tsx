@@ -83,6 +83,10 @@ const GamePage: React.FC = () => {
 
     socket.emit("update-room", roomCode);
 
+    socket.on("update-positions", (updatedPlayers) => {
+      setPlayers(updatedPlayers);
+    });
+
     // Update'i mängijaid
     const positions = ["bottom", "right", "top", "left"];
 
@@ -116,6 +120,7 @@ const GamePage: React.FC = () => {
     });
 
     return () => {
+      socket.off("update-positions");
       socket.off("current-players");
       socket.off("player-joined");
       socket.off("player-left");
@@ -147,37 +152,31 @@ const GamePage: React.FC = () => {
   const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
 
-    setPlayers((prevPlayers) => {
-      // Check if the position is already taken
-      const positionTaken = prevPlayers.some(
-        (player) => player.position === clickedPosition
-      );
+    console.log("mängijate list: " + JSON.stringify(players));
 
-      if (positionTaken) {
-        return prevPlayers; // If taken, do nothing
-      }
+    // Check if position is already taken by another player
+    const positionTaken = players.some(
+      (player) => player.position === clickedPosition
+    );
 
-      // Assign the current player to the clicked position
-      return prevPlayers.map((player) => {
-        if (player.name === playerName && !player.position) {
-          return { ...player, position: clickedPosition };
-        }
-        return player;
-      });
+    if (positionTaken) {
+      return; // If the position is taken, do nothing
+    }
 
-      // const clickedIndex = prevPlayers.findIndex(
-      //   (player) => player.id === clickedPlayerId
-      // );
-      // const orderedPlayers = [
-      //   ...prevPlayers.slice(clickedIndex),
-      //   ...prevPlayers.slice(0, clickedIndex),
-      // ];
-      // const positions = ["bottom", "right", "top", "left"];
-      // return orderedPlayers.map((player, index) => ({
-      //   ...player,
-      //   position: positions[index % positions.length],
-      // }));
+    // serverisse ka positisiooniinfo et teistel ka sync'iksid
+    socket.emit("position-picked", {
+      playerName,
+      position: clickedPosition,
+      roomCode,
     });
+
+    setPlayers((prevPlayers) =>
+      prevPlayers.map((player) =>
+        player.name === playerName && !player.position
+          ? { ...player, position: clickedPosition }
+          : player
+      )
+    );
   };
 
   const handleStartGame = () => {
@@ -218,9 +217,9 @@ const GamePage: React.FC = () => {
           {/* Lobby vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {["bottom", "right", "top", "left"].map((position) => {
-              const playerInPosition = players.find(
-                (player) => player.position === position
-              );
+              const playerInPosition = Array.isArray(players)
+                ? players.find((player) => player.position === position)
+                : null;
 
               return (
                 <div
@@ -253,7 +252,7 @@ const GamePage: React.FC = () => {
             {/* Ootamisala, enne positsioonide valimist */}
             <div className="absolute top-0 left-0 flex flex-col items-center space-y-4">
               {players
-                .filter((player) => !player.position)
+                .filter((player) => !player.position) // Only players without a position
                 .map((player) => (
                   <Player
                     key={player.id}
@@ -498,33 +497,26 @@ interface PlayerProps {
   clickable?: boolean;
 }
 
-const Player: React.FC<PlayerProps> = ({
-  name,
-  bgImage,
-  hearts,
-  clickable,
-}) => {
+const Player: React.FC<{
+  name: string;
+  bgImage: string;
+  clickable: boolean;
+}> = ({ name, bgImage, clickable }) => {
   return (
     <div
-      className={`flex flex-col items-center space-y-2 ${clickable ? "cursor-pointer" : ""}`}
+      className={`w-16 h-16 rounded-full border-4 ${
+        clickable ? "cursor-pointer" : ""
+      }`}
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
-      {hearts && (
-        <div className="flex space-x-1">
-          {Array.from({ length: hearts }).map((_, index) => (
-            <FavoriteIcon key={index} className="text-red-800" />
-          ))}
-        </div>
-      )}
-      <div
-        className="w-16 h-16 rounded-full"
-        style={{
-          backgroundImage: bgImage,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundColor: "transparent",
-        }}
-      />
-      <Typography variant="body1" className="font-semibold text-white">
+      <Typography
+        variant="body2"
+        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 font-bold text-white text-shadow"
+      >
         {name}
       </Typography>
     </div>

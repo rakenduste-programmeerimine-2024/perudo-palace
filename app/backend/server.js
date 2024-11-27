@@ -19,7 +19,16 @@ io.on("connection", (socket) => {
     if (rooms[roomCode]) {
       socket.emit("room-error", "Room with that code already exists.");
     } else {
-      rooms[roomCode] = { host: hostName, players: [hostName] };
+      rooms[roomCode] = {
+        host: hostName,
+        players: [hostName],
+        positions: {
+          position1: null,
+          position2: null,
+          position3: null,
+          position4: null,
+        },
+      };
       socket.join(roomCode);
       socket.emit("room-created", roomCode);
       console.log("Players in room when creating:", rooms[roomCode].players);
@@ -27,7 +36,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join-room", (roomCode, playerName) => {
-    if (rooms[roomCode].players.length == 4) {
+    if (rooms[roomCode] == true && rooms[roomCode].players.length == 4) {
       socket.emit("room-error", "Room player limit reached (4).");
     } else if (rooms[roomCode]) {
       rooms[roomCode].players.push(playerName);
@@ -72,6 +81,38 @@ io.on("connection", (socket) => {
         console.log("room " + roomCode + " deleted");
       }
     }
+  });
+
+  socket.on("position-picked", ({ playerName, position, roomCode }) => {
+    const room = rooms[roomCode];
+
+    if (!room) {
+      socket.emit("room-error", "Room does not exist.");
+      return;
+    }
+
+    const playerIndex = room.players.indexOf(playerName);
+
+    if (playerIndex === -1) {
+      socket.emit("room-error", "Player not found in room.");
+      return;
+    }
+
+    const positionKey = `position${playerIndex + 1}`;
+
+    // Check if position is already taken
+    if (Object.values(room.positions).includes(position)) {
+      socket.emit("position-error", "Position already taken.");
+      return;
+    }
+
+    // Assign the position
+    room.positions[positionKey] = position;
+
+    // Emit updated positions to the room
+    io.to(roomCode).emit("update-positions", room.positions);
+
+    console.log(`Updated positions for room ${roomCode}:`, room.positions);
   });
 
   socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>
