@@ -3,6 +3,48 @@
 @tailwind utilities;
 
 @layer base {
+  /* Tekitab ühtlase piirjoone stiili oranžide äärte jaoks */
+  .border-orange {
+    border-width: 2px;
+    border-color: #FFA500; /* Oranž */
+  }
+
+  /* Fokusel oranžide äärte stiili tagamine */
+  .focus\:border-orange {
+    --tw-ring-color: #FFA500; /* Oranži ringi jaoks */
+    --tw-border-color: #FFA500;
+    outline: none; /* Eemaldab vaikefokuse */
+    box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.5); /* Fokusel lisab varju */
+  }
+
+  /* Teksti ja ikoonide jaoks oranži stiili ühtlustamine */
+  .text-orange {
+    color: #FFA500; /* Oranži tekst */
+  }
+
+  /* Sisestusväljade sisemiste stiilide parandamine */
+  input, textarea, select {
+    --tw-border-color: #FFA500;
+    --tw-ring-color: rgba(255, 165, 0, 0.5); /* Fokusel oranži varju */
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #FFA500;
+    box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.5); /* Fokus varju */
+    outline: none;
+  }
+  
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    background-color: #1a202c !important; /* Sama taustavärv */
+    color: #ffa500 !important; /* Teksti värv */
+    border-color: #ffa500 !important; /* Piirjoone värv */
+    -webkit-text-fill-color: #ffa500 !important; /* Autofillitud teksti värv */
+    box-shadow: 0 0 0px 1000px #1a202c inset !important; /* Eemaldab valge taustavarju */
+    transition: background-color 5000s ease-in-out 0s !important; /* Animatsioonist loobumine */
+  }
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
