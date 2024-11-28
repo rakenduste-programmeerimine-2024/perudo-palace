@@ -7,6 +7,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { useRouter } from "next/navigation";
 import io from "socket.io-client";
 import BackButton from "@/components/buttons/back-button";
+import { MuiThemeProvider } from "../MuiThemeProvider";
 
 const socket = io("http://localhost:3030");
 
@@ -89,6 +90,7 @@ const Create: React.FC = () => {
   };
   
   return (
+    <MuiThemeProvider>
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
       {/* Pealkiri */}
       <div className="flex flex-col items-center justify-center mt-0">
@@ -152,6 +154,7 @@ const Create: React.FC = () => {
       {/* Tagasi nupp */}
       <BackButton href="/" />
     </div>
+    </MuiThemeProvider>
   );
   
 };
