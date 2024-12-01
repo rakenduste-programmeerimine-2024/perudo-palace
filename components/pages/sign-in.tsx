@@ -1,42 +1,77 @@
 import { signInAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { TextField } from "@mui/material";
 import BackButton from "@/components/buttons/back-button";
+import { MuiThemeProvider } from "../MuiThemeProvider";
 
 export default async function LoginPage(props: { searchParams: Promise<Message> }) {
   const searchParams = await props.searchParams;
+
   return (
-    <>
-    <div className="flex flex-col items-center justify-start">
-      <h1 className="text-8xl font-bold mt-40 whitespace-nowrap">Perudo Palace</h1>
-    </div>
-    <form className="flex flex-col items-center justify-start mt-20">
-      <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
-        <Label htmlFor="email">Email</Label>
-        <Input name="email" placeholder="you@example.com" required />
-        <div className="flex justify-between items-center">
-          <Label htmlFor="password">Password</Label>
+    <MuiThemeProvider>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
+        {/* Pealkirjad */}
+        <div className="flex flex-col items-center justify-center mt-0">
+          <h1 className="text-4xl font-bold mb-6 text-center text-orange-500">
+            Perudo Palace
+          </h1>
+          <h2 className="text-2xl mb-8 text-center text-orange-400">Sign In</h2>
         </div>
-        <Input
-          type="password"
-          name="password"
-          placeholder="Your password"
-          required
-        />
-        <SubmitButton 
-          className="bg-gray-500 hover:bg-gray-600 text-white shadow-lg" 
-          pendingText="Signing In..." 
-          formAction={signInAction}>
-          Sign in
-        </SubmitButton>
-        <FormMessage message={searchParams} />
+
+        {/* Vorm */}
+        <form className="flex flex-col items-center justify-center w-full max-w-md space-y-4 bg-gray-900 p-8 rounded-md shadow-lg">
+          <TextField
+            label="Email"
+            type="email"
+            variant="outlined"
+            fullWidth
+            className="rounded-md text-orange-500 border-2 border-orange-500"
+            InputLabelProps={{
+              style: { color: "#FFA500" }, // Label värv
+            }}
+            InputProps={{
+              classes: {
+                notchedOutline: "border-orange-500 focus:border-orange-600",
+              },
+              style: {
+                color: "#FFA500", // Sisestatud teksti värv
+              },
+            }}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            className="rounded-md text-orange-500 border-2 border-orange-500"
+            InputLabelProps={{
+              style: { color: "#FFA500" }, // Label värv
+            }}
+            InputProps={{
+              classes: {
+                notchedOutline: "border-orange-500 focus:border-orange-600",
+              },
+              style: {
+                color: "#FFA500", // Sisestatud teksti värv
+              },
+            }}
+          />
+          <SubmitButton
+            className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
+            pendingText="Signing In..."
+            formAction={signInAction}
+          >
+            Sign In
+          </SubmitButton>
+          <div className="text-red-500">
+          <FormMessage message={searchParams} />
+        </div>
+        </form>
+
+        {/* Tagasi nupp */}
+        <BackButton href="/" />
       </div>
-    </form>
-    <div className="absolute bottom-0 left-0 mb-4 ml-4 py-2 px-4 rounded">
-      <BackButton href="/"/>
-    </div>
-    </>
+    </MuiThemeProvider>
   );
 }
