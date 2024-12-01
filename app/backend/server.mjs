@@ -1,4 +1,4 @@
-import { currentAction } from './game/gameLogicScript.js';
+import { currentAction } from './game/gameLogicScript.mjs';
 import { 
   handleGameStart,
   handleTurns, 
@@ -7,7 +7,7 @@ import {
   handleDiceRolls, 
   checkGameOver,
   handlePlayerDeath,
-  actions } from './game/gameLogicScript.js';
+  actions } from './game/gameLogicScript.mjs';
 import { Server } from "socket.io";
 
 const io = new Server(3030, {
