@@ -24,7 +24,10 @@ io.on("connection", (socket) => {
   // RUUMI LOOMINE
   socket.on("create-room", (roomCode, hostName) => {
     if (rooms[roomCode]) {
-      socket.emit("room-error", "Room with that code already exists.");
+      io.to(socket.id).emit(
+        "room-error",
+        "Room with that code already exists."
+      );
     } else {
     // mangija info
     let userData = {
@@ -57,10 +60,10 @@ io.on("connection", (socket) => {
        },
     };
 
-    socket.join(roomCode);
-    socket.emit("room-created", roomCode);
-    io.to(roomCode).emit("room-host", rooms[roomCode].host);
-    console.log("Players in room when creating:", rooms[roomCode].players);
+      socket.join(roomCode);
+      io.to(roomCode).emit("room-created", roomCode);
+      io.to(roomCode).emit("room-host", rooms[roomCode].host);
+      console.log("Players in room when creating:", rooms[roomCode].players);
       return;
     }
     
@@ -70,7 +73,7 @@ io.on("connection", (socket) => {
    //Listenerid mängu loogika jaoks paigas
   socket.on("join-room", (roomCode, playerName) => {
     if (rooms[roomCode] == true && rooms[roomCode].players.length == 4) {
-      socket.emit("room-error", "Room player limit reached (4).");
+      io.to(socket.id).emit("room-error", "Room full (4 players).");
     } else if (rooms[roomCode]) {
       rooms[roomCode].players.push(playerName, playerName.id);
       socket.join(roomCode);
@@ -79,14 +82,14 @@ io.on("connection", (socket) => {
       io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when joining:", rooms[roomCode].players);
     } else {
-      socket.emit("room-error", "Room does not exist.");
+      io.to(socket.id).emit("room-error", "Room does not exist.");
       return;
     }
    });
 
   socket.on("update-room", (roomCode, playerName) => {
     if (!rooms[roomCode]) {
-      socket.emit("room-error", "Room does not exist.");
+      io.to(socket.id).emit("room-error", "Room does not exist.");
       return;
     }
     
@@ -148,14 +151,14 @@ io.on("connection", (socket) => {
     const room = rooms[roomCode];
 
     if (!room) {
-      socket.emit("room-error", "Room does not exist.");
+      io.to(socket.id).emit("room-error", "Room does not exist.");
       return;
     }
 
     const playerIndex = room.players.indexOf(playerName);
 
     if (playerIndex === -1) {
-      socket.emit("room-error", "Player not found in room.");
+      io.to(socket.id).emit("room-error", "Player not found in room.");
       return;
     }
 
@@ -163,7 +166,7 @@ io.on("connection", (socket) => {
 
     // Check kas positsioon on võetud
     if (Object.values(room.positions).includes(position)) {
-      socket.emit("position-error", "Position already taken.");
+      io.to(socket.id).emit("position-error", "Position already taken.");
       return;
     }
 
