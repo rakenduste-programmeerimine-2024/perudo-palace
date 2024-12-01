@@ -25,7 +25,7 @@ export const currentAction = actions.nil;
 
 //impordin serverist rooms objectid, 
 //et kõik sellege seotud funktsioonid töötaksid
-import { rooms } from '../server'
+import { rooms } from '../server.js'
 
 //Ütleb kellel on turn, teeb kõik täringu veeretused
 export function handleGameStart(roomCode) {  

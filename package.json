@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"next dev\" \"node app/backend/server.js\"",
     "build": "next build",

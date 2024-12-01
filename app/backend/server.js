@@ -1,15 +1,14 @@
-import { currentAction } from './game/gameLogicScripts.js';
+import { currentAction } from './game/gameLogicScript.js';
 import { 
   handleGameStart,
   handleTurns, 
-  handlePlayerDeath,
   handleDiceCheck, 
   handleDiceBidSubmit, 
   handleDiceRolls, 
   checkGameOver,
   handlePlayerDeath,
-  actions } from './gameLogicScript.js';
-const { Server } = require("socket.io");
+  actions } from './game/gameLogicScript.js';
+import { Server } from "socket.io";
 
 const io = new Server(3030, {
   cors: {
@@ -175,13 +174,6 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("update-positions", room.positions);
   });
 
-  socket.on("start-game", (roomCode) => {
-    io.to(roomCode).emit("start-game");
-  });
-
-  socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>
-    PassTurn(roomId, diceAmount, dotAmount)
-  );
   socket.on("challange", (roomCode) => {
     console.log("Challanged!")
 
