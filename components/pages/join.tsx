@@ -25,7 +25,7 @@ const Join: React.FC = () => {
     });
 
     socket.on("player-joined", (playerName) => {
-      router.push(`/room?roomCode=${roomCode}&playerName=${playerName}`);
+      router.push(`/gamepage?roomCode=${roomCode}&playerName=${playerName}`);
     });
 
     return () => {

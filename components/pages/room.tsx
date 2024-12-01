@@ -17,7 +17,7 @@ const Room: React.FC = () => {
   useEffect(() => {
     if (!roomCode) return;
     if (!playerName) {
-      router.push("/lobby");
+      router.push("/");
       return;
     }
 
@@ -45,7 +45,7 @@ const Room: React.FC = () => {
   const handleLeaveRoom = () => {
     socket.emit("leave-room", roomCode, playerName);
     setPlayers([]);
-    router.push("/lobby");
+    router.push("/");
   };
 
   if (!roomCode) {

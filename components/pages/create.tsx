@@ -30,7 +30,7 @@ const Create: React.FC = () => {
     });
 
     socket.on("room-created", (roomCode) => {
-      router.push(`/room?roomCode=${roomCode}&playerName=${hostName}`);
+      router.push(`/gamepage?roomCode=${roomCode}&playerName=${hostName}`);
     });
 
     return () => {

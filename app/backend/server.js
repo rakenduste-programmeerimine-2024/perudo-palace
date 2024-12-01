@@ -19,19 +19,32 @@ io.on("connection", (socket) => {
     if (rooms[roomCode]) {
       socket.emit("room-error", "Room with that code already exists.");
     } else {
-      rooms[roomCode] = { host: hostName, players: [hostName] };
+      rooms[roomCode] = {
+        host: hostName,
+        players: [hostName],
+        positions: {
+          position1: null,
+          position2: null,
+          position3: null,
+          position4: null,
+        },
+      };
       socket.join(roomCode);
       socket.emit("room-created", roomCode);
+      io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when creating:", rooms[roomCode].players);
     }
   });
 
   socket.on("join-room", (roomCode, playerName) => {
-    if (rooms[roomCode]) {
+    if (rooms[roomCode] == true && rooms[roomCode].players.length == 4) {
+      socket.emit("room-error", "Room player limit reached (4).");
+    } else if (rooms[roomCode]) {
       rooms[roomCode].players.push(playerName);
       socket.join(roomCode);
       io.to(roomCode).emit("current-players", rooms[roomCode].players);
       io.to(roomCode).emit("player-joined", playerName);
+      io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when joining:", rooms[roomCode].players);
     } else {
       socket.emit("room-error", "Room does not exist.");
@@ -70,6 +83,40 @@ io.on("connection", (socket) => {
         console.log("room " + roomCode + " deleted");
       }
     }
+  });
+
+  socket.on("position-picked", ({ playerName, position, roomCode }) => {
+    const room = rooms[roomCode];
+
+    if (!room) {
+      socket.emit("room-error", "Room does not exist.");
+      return;
+    }
+
+    const playerIndex = room.players.indexOf(playerName);
+
+    if (playerIndex === -1) {
+      socket.emit("room-error", "Player not found in room.");
+      return;
+    }
+
+    const positionKey = `position${playerIndex + 1}`;
+
+    // Check kas positsioon on võetud
+    if (Object.values(room.positions).includes(position)) {
+      socket.emit("position-error", "Position already taken.");
+      return;
+    }
+
+    // Assign'i positsioon'id
+    room.positions[positionKey] = position;
+
+    // saada positsioonid lobby'sse
+    io.to(roomCode).emit("update-positions", room.positions);
+  });
+
+  socket.on("start-game", (roomCode) => {
+    io.to(roomCode).emit("start-game");
   });
 
   socket.on("pass-turn", (roomId, diceAmount, dotAmount) =>
