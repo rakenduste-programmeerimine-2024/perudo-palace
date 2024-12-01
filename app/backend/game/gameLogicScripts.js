@@ -15,6 +15,14 @@ export const lives = Array(players.length).fill(3);
 //jälgib ka kes tegi viimase bluffi indeksi
 export const activeBluff = {diceValue:1, diceAmount:1, playerIndex:0};
 
+export const actions = {
+   nil: "NIL",
+   passTurn: "PASSTURN",
+   challange: "CHALLANGE",
+   bullseye: "BULLSEYE"
+}
+export const currentAction = actions.nil;
+
 //impordin serverist rooms objectid, 
 //et kõik sellege seotud funktsioonid töötaksid
 import { rooms } from '../server'
@@ -30,6 +38,7 @@ export function handleGameStart(roomCode) {
    rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
    //Mängu alguse turni seadmine
    rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
+   currentAction = actions.nil;
 }
 
 //Muudab kelle turn on olenevat sellest kelle turn prg on

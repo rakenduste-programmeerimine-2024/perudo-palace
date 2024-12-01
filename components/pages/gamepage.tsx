@@ -70,7 +70,7 @@ socket.on("display-current-bid", (activeBid) => {
 });
 
 // display current action
-socket.on("display-current-bid", () => {
+socket.on("display-action", (action) => {
   
 });
 

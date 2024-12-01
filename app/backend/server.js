@@ -1,4 +1,14 @@
-import { handleGameStart,handleTurns ,handlePlayerDeath,handleDiceCheck, handleDiceBidSubmit, handleDiceRolls, checkGameOver,handlePlayerDeath} from './gameLogicScript.js';
+import { currentAction } from './game/gameLogicScripts.js';
+import { 
+  handleGameStart,
+  handleTurns, 
+  handlePlayerDeath,
+  handleDiceCheck, 
+  handleDiceBidSubmit, 
+  handleDiceRolls, 
+  checkGameOver,
+  handlePlayerDeath,
+  actions } from './gameLogicScript.js';
 const { Server } = require("socket.io");
 
 const io = new Server(3030, {
@@ -11,10 +21,6 @@ export let rooms = {};
 
 io.on("connection", (socket) => {
   console.log("serveriga ühendatud: " + socket.id);
-
-  //   socket.on("test-event", (number, string, obj) => {
-  //    console.log(number, string, obj)
-  //   })
 
   // RUUMI LOOMINE
   socket.on("create-room", (roomCode, hostName) => {
@@ -37,7 +43,15 @@ io.on("connection", (socket) => {
       turns: null, 
       dice: null, 
       lives: null, 
-      activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 }
+      activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
+      actions: {
+         nil: "NIL",
+         updateBets: "UPDATEBETS",
+         passTurn: "PASSTURN",
+         challange: "CHALLANGE",
+         bullseye: "BULLSEYE"
+      },
+      currentAction: null
     };
 
     socket.join(roomCode);
@@ -105,6 +119,7 @@ io.on("connection", (socket) => {
   socket.on("game-start", ({ roomCode }) =>{
     handleGameStart(roomCode);
 
+    io.to(roomCode).emit("display-action", rooms[roomCode].currentAction.nil); // naitab hetkese inimese actionit
     io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
     io.to(roomCode).emit("display-player-dices", socket.id); // naitab ainult playeri elusi
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi
@@ -116,13 +131,14 @@ io.on("connection", (socket) => {
 
     handleDiceBidSubmit(roomCode, diceAmount, diceValue);
 
+    io.to(roomCode).emit("display-action", rooms[roomCode].currentAction.passTurn); // naitab hetkese inimese actionit
     io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
   });
 
   socket.on("challange", (roomCode) => {
     console.log("Challanged!")
 
-    io.to(roomCode).emit("display-action"); // naitab hetkese inimese actionit
+    io.to(roomCode).emit("display-action", rooms[roomCode].currentAction.challange); // naitab hetkese inimese actionit
     io.to(roomCode).emit("display-all-dices", rooms[roomCode].dice); // naitab koikide inimeste taringuid
 
     handleDiceCheck(roomCode);
@@ -135,7 +151,7 @@ io.on("connection", (socket) => {
   socket.on("check-bid", ({ response, roomCode }) => {
     console.log("Bullseye!")
     
-    io.to(roomCode).emit("display-action"); // naitab hetkese inimese actionit
+    io.to(roomCode).emit("display-action", rooms[roomCode].currentAction.bullseye); // naitab hetkese inimese actionit
     io.to(roomCode).emit("display-all-dices", rooms[roomCode].dice); // naitab koikide inimeste taringuid
 
     handleDiceCheck(response, roomCode);
