@@ -44,11 +44,6 @@ socket.on("display-all-dices", (dice) => {
   
 });
 
-// hide all dices
-socket.on("hide-all-dices", () => {
-  
-});
-
 // display this player dices
 socket.on("display-player-dices", (userId) => {
   
@@ -129,6 +124,7 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     socket.on("start-game", () => {
       setGameStarted(true);
+      console.log("STARTED GAME!");
     });
 
     socket.on("room-host", (hostName: string) => {
@@ -380,7 +376,7 @@ const handleBidCheck = async (response: boolean, roomCode: number) => {
               <Button
                 variant="contained"
                 color="success"
-                onClick={handleStartGame}
+                onClick={() => handleStartGame(roomCode)}
                 sx={{
                   padding: "1rem 2rem",
                   fontSize: "1.25rem",

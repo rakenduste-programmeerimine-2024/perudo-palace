@@ -20,6 +20,11 @@ const Join: React.FC = () => {
   const [socketId, setSocketId] = useState<string>("");
 
   useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to socket server, socket ID:", socket.id);
+      setSocketId(socket.id as string);
+    });
+
     socket.on("room-error", (message) => {
       setError(message);
     });
@@ -41,7 +46,7 @@ const Join: React.FC = () => {
     }
 
     setError("");
-    socket.emit("join-room", roomCode, playerName);
+    socket.emit("join-room", roomCode, playerName, socketId);
 
     // addToDB();
   };
