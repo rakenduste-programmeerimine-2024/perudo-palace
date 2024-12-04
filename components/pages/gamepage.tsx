@@ -366,7 +366,12 @@ const GamePage: React.FC = () => {
           {/* Start Game ja Leave nupp */}
           <div className="absolute bottom-[10rem] right-[5rem]">
             {!isHost ? (
-              <p>Waiting for the host to start the game...</p>
+              <div className="bg-yellow-600 text-white p-4 rounded-md shadow-lg flex items-center space-x-3">
+                <span className="font-semibold">⏳</span>
+                <p className="text-lg font-semibold">
+                  Waiting for the host to start the game...
+                </p>
+              </div>
             ) : (
               <Button
                 variant="contained"
