@@ -322,7 +322,6 @@ const GamePage: React.FC = () => {
                   <span className="mt-2 text-white font-semibold">
                     {player.name}
                   </span>{" "}
-                  {/* Name below the image */}
                 </div>
               ))}
           </div>
@@ -365,6 +364,11 @@ const GamePage: React.FC = () => {
 
           {/* Start Game ja Leave nupp */}
           <div className="absolute bottom-[10rem] right-[5rem]">
+            <div className="bg-gray-800 text-white p-4 rounded-lg shadow-lg w-full max-w-xs text-center">
+              <p className="font-semibold text-lg">
+                Room Code: <span className="font-bold">{roomCode}</span>
+              </p>
+            </div>
             {!isHost ? (
               <div className="bg-yellow-600 text-white p-4 rounded-md shadow-lg flex items-center space-x-3">
                 <span className="font-semibold">⏳</span>
