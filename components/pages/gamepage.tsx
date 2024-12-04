@@ -10,6 +10,11 @@ const socket = io("http://localhost:3030");
 //Täringute asetamine ekraanil
 const dicePositions = [
   // Define täringu positsioonid
+  { bottom: "20%", left: "47%" }, //alumine
+  { bottom: "20%", left: "41%" }, //alumine
+  { bottom: "32%", left: "47%" }, //alumine
+  { bottom: "32%", left: "41%" }, //alumine
+
   { top: "43%", left: "10%" }, //vasak
   { top: "55%", left: "10%" }, //vasak
   { top: "43%", left: "16%" }, //vasak
@@ -19,11 +24,6 @@ const dicePositions = [
   { top: "20%", right: "41%" }, //ülemine
   { top: "32%", right: "47%" }, //ülemine
   { top: "32%", right: "41%" }, //ülemine
-
-  { bottom: "20%", left: "47%" }, //alumine
-  { bottom: "20%", left: "41%" }, //alumine
-  { bottom: "32%", left: "47%" }, //alumine
-  { bottom: "32%", left: "41%" }, //alumine
 
   { bottom: "47%", right: "10%" }, //parem
   { bottom: "35%", right: "10%" }, //parem
@@ -46,6 +46,7 @@ const GamePage: React.FC = () => {
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
   const [playerDiceImages, setPlayerDiceImgaes] = useState<string[]>([]);
   const [isDisplayingDice, setDisplayingDice] = useState(false);
+  const [hasDice, setHasDice] = useState(false);
 
   //#region LISTENERS
 
@@ -120,38 +121,58 @@ const GamePage: React.FC = () => {
     });
 
     socket.on("generate-dice", (dice) => {
-      console.log(dice);
+      if (hasDice) { return; }
+      setHasDice(true);
+
       let arrayValue = 0;
       let diceValue = 0;
-      const initialDiceImages = dicePositions.map(() => {
+
+      const diceImages = dicePositions.filter((_, index) => index < dice.length * 4).map(() => {
         const diceNumber = dice[arrayValue][diceValue]; // Vahemik 1-6
 
         diceValue++;
         if (diceValue > 3) {diceValue = 0; arrayValue++; }
-        if (arrayValue > 3) {arrayValue = 0; }
 
         return `/image/w_dice/dice${diceNumber}.png`;
       });
-      console.log(initialDiceImages);
-      setRandomDiceImages(initialDiceImages);
+
+      console.log("All dice: " + diceImages);
+      setRandomDiceImages(diceImages);
+    });
+
+    socket.on("display-player-dice", (playerNumber, userName, dice) =>{
+      if (userName == playerName) { return; }
+
+      const scanningPositionStart =
+        playerNumber == 0 ? 0 :
+        playerNumber == 1 ? 4 :
+        playerNumber == 2 ? 8 : 12;
+
+      let diceValue = 0;
+      const playerSet = dice[playerNumber];
+      const diceImages = dicePositions.slice(scanningPositionStart, scanningPositionStart + 4).map(() => {
+        const diceNumber = playerSet[diceValue];
+
+        diceValue++;
+        if (diceValue > 3) {diceValue = 0; }
+
+        return `/image/w_dice/dice${diceNumber}.png`;
+      });
+
+      console.log(diceImages);
+      setPlayerDiceImgaes(diceImages);
     });
 
     socket.on("hide-all-dices", () => {
       console.log("Hiding all dice!");
 
-      setDisplayingDice(true);
+      setDisplayingDice(false);
     });
 
     socket.on("display-all-dices", () => {
       console.log("Displaying all dices!")
       
       setDisplayingDice(true);
-    });
-
-    socket.on("display-player-dices", (userName) => {
-      if (userName != playerName) { return; }
-
-      console.log("Displaying players dices for: " + playerName)
     });
 
     socket.on("display-hearts", (lives, players) => {
@@ -200,16 +221,7 @@ const GamePage: React.FC = () => {
 
   //#endregion
 
-  //#region DICES
-
-  // // Genereeri täringute pildid ainult üks kord
-  // useEffect(() => {
-  //   const initialDiceImages = dicePositions.map(() => {
-  //     const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
-  //     return `/image/w_dice/dice${diceNumber}.png`;
-  //   });
-  //   setRandomDiceImages(initialDiceImages);
-  // }, []);
+  //#region FUNCTIONS
 
   const increaseBid = () => {
     if (diceNumber < 16) setDiceNumber(diceNumber + 1);
@@ -224,10 +236,6 @@ const GamePage: React.FC = () => {
     if (diceValue > 1) setDiceValue(diceValue - 1);
   };
   
-  //#endregion
-
-  //#region FUNCTIONS
-
   const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
 
@@ -443,7 +451,7 @@ const GamePage: React.FC = () => {
                   { top: "41%", left: "10%" }, // Vasakul
                   { top: "15%", right: "44%" }, // Üleval
                   { bottom: "45%", right: "10%" }, // Paremal
-                  { bottom: "15%", right: "44%" }
+                  //{ bottom: "15%", right: "44%" } // all
                 ].map((style, index) => (
                   <div
                     key={index}

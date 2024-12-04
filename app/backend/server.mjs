@@ -111,27 +111,24 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("start-game");
     io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
 
-    console.log(rooms[roomCode].players.length);
-    for (let i = 0; i < rooms[roomCode].players.length; i++) {
-      const randomDiceAmounts = [];
-
-      for (let j = 0; j < 4; j++) {
-        randomDiceAmounts.push(Math.floor(Math.random() * 6) + 1);
-      }
-
-      rooms[roomCode].dice.push(randomDiceAmounts);
+    // dice generating
+    const randomDiceAmounts = [];
+    for (let j = 0; j < 4; j++) {
+      randomDiceAmounts.push(Math.floor(Math.random() * 6) + 1);
     }
+    if (rooms[roomCode].length <= rooms[roomCode].players.length) { rooms[roomCode].dice.push(randomDiceAmounts); }
     console.log(rooms[roomCode].dice);
     io.to(roomCode).emit("generate-dice", rooms[roomCode].dice);
 
-    rooms[roomCode].players.forEach(name => {
-      io.to(roomCode).emit("display-player-dices", name); // naitab ainult playeri dice
-    });
-    
+    //dice displaying
+    for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
+      io.to(roomCode).emit("display-player-dice", playerNumber, rooms[roomCode].players[playerNumber], rooms[roomCode].dice); // naitab ainult playeri dice
+    }
+
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi
     io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
-  
+
   socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
     console.log("Placed new bid!")
 
@@ -180,9 +177,6 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
 
     handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
-
-    io.to(roomCode).emit("display-player-dices", rooms[roomCode].players); // naitab ainult playeri elusi
-    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
 });
 
