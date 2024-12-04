@@ -23,7 +23,7 @@ const Create: React.FC = () => {
     socket.on("connect", () => {
       console.log("Connected to socket server, socket ID:", socket.id);
       setSocketId(socket.id as string);
-    });
+    }); // EI TOOTA
 
     socket.on("room-error", (message) => {
       setError(message);

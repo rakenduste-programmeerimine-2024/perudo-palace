@@ -42,10 +42,7 @@ io.on("connection", (socket) => {
       io.to(roomCode).emit("room-created", roomCode);
       io.to(roomCode).emit("room-host", rooms[roomCode].host);
       console.log("Players in room when creating:", rooms[roomCode].players);
-      return;
     }
-    
-
   });
 
    //Listenerid mängu loogika jaoks paigas
@@ -65,7 +62,7 @@ io.on("connection", (socket) => {
       io.to(socket.id).emit("room-error", "Room does not exist.");
       return;
     }
-   });
+  });
 
   socket.on("update-room", (roomCode, playerName) => {
     if (!rooms[roomCode]) {
@@ -103,7 +100,7 @@ io.on("connection", (socket) => {
     delete rooms[roomCode];
     console.log("room " + roomCode + " deleted");
   });
-   
+  
   //-----------
   //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
   //-----------
@@ -112,13 +109,27 @@ io.on("connection", (socket) => {
     handleGameStart(roomCode);
 
     io.to(roomCode).emit("start-game");
+    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
 
-    rooms[roomCode].playerIds.forEach(id => {
-      io.to(roomCode).emit("display-player-dices", id); // naitab ainult playeri dice
+    console.log(rooms[roomCode].players.length);
+    for (let i = 0; i < rooms[roomCode].players.length; i++) {
+      const randomDiceAmounts = [];
+
+      for (let j = 0; j < 4; j++) {
+        randomDiceAmounts.push(Math.floor(Math.random() * 6) + 1);
+      }
+
+      rooms[roomCode].dice.push(randomDiceAmounts);
+    }
+    console.log(rooms[roomCode].dice);
+    io.to(roomCode).emit("generate-dice", rooms[roomCode].dice);
+
+    rooms[roomCode].players.forEach(name => {
+      io.to(roomCode).emit("display-player-dices", name); // naitab ainult playeri dice
     });
     
-    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi
-    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].playerIds); // naitab kelle turn hetkel on
+    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
   
   socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
@@ -127,6 +138,7 @@ io.on("connection", (socket) => {
     handleDiceBidSubmit(roomCode, diceAmount, diceValue);
 
     io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
 
   socket.on("position-picked", ({ playerName, position, roomCode }) => {
@@ -159,31 +171,18 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("update-positions", room.positions);
   });
 
-  socket.on("challange", (roomCode) => {
-    console.log("Challanged!")
+  socket.on("check-bid", ({ response, roomCode }) => {
+    io.to(roomCode).emit("display-all-dices"); // naitab koikide inimeste taringuid
 
-    io.to(roomCode).emit("display-all-dices", rooms[roomCode].dice); // naitab koikide inimeste taringuid
+    handleDiceCheck(response, roomCode);
 
-    handleDiceCheck(roomCode);
-
-    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi see hetk
+    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi see hetk
     io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
 
     handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
 
-    io.to(roomCode).emit("display-player-dices", socket.id); // naitab ainult playeri elusi
-  });
-
-  socket.on("check-bid", ({ response, roomCode }) => {
-    console.log("Bullseye!")
-    
-    io.to(roomCode).emit("display-all-dices", rooms[roomCode].dice); // naitab koikide inimeste taringuid
-
-    handleDiceCheck(response, roomCode);
-
-    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
-    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi see hetk
-    io.to(roomCode).emit("display-player-dices", socket.id); // naitab ainult playeri elusi
+    io.to(roomCode).emit("display-player-dices", rooms[roomCode].players); // naitab ainult playeri elusi
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
 });
 
@@ -202,11 +201,13 @@ function handleNewGameSetup(roomCode){
   //Kõikidele mängjatele täringute veeretamine
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
   //Mängu alguse turni seadmine
-  rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
+  rooms[roomCode].turns = handleTurns(roomCode);
 }
 
 //Muudab kelle turn on olenevat sellest kelle turn prg on
-export function handleTurns(turnArray, roomCode) {
+export function handleTurns(roomCode) {
+  const turnArray = rooms[roomCode].turns;
+
   for (let i = 0; i < turnArray.length; i++) {
      // Mängu algus: paned 1. mängja käigu trueks
      if (!turnArray.includes(true)) {
@@ -237,35 +238,36 @@ export function handleDiceCheck(response, roomCode){
   //Käib läbi kõik täringud ja loetab, mitu kindlat täringut on
   for (let i = 0; i < rooms[roomCode].dice.length; i++) {
      for (let j = 0; j < rooms[roomCode].dice[i].length; j++) {
-        if(rooms[roomCode].dice[i][j] == diceValue){
+        if(rooms[roomCode].dice[i][j] == rooms[roomCode].activeBid.diceValue){
            diceCounter++
         }
      }
  }
+
  //Muutujad, et lihtsalt elusid maha saaks võtta.
  const lastBidder = rooms[roomCode].activeBid.playerIndex;
  const checkerPlayer = (lastBidder + 1) % rooms[roomCode].dice.length;
 
  //kontrollib kas leitud täringute arv ühtib sellege, mis on bluffis
- if(diceCounter == diceAmount){
+ if(diceCounter == rooms[roomCode].activeBid.diceAmount){
   if (response === false){
      rooms[roomCode].lives[checkerPlayer]--;
-     if(rooms[roomCode].lives[checkerPlayer] == 0){handlePlayerDeath(checkerPlayer)}
+     if(rooms[roomCode].lives[checkerPlayer] == 0){handlePlayerDeath(roomCode, checkerPlayer)}
   }
   else{
      rooms[roomCode].lives[lastBidder]--;
-     if(rooms[roomCode].lives[lastBidder] == 0){handlePlayerDeath(lastBidder)}
+     if(rooms[roomCode].lives[lastBidder] == 0){handlePlayerDeath(roomCode, lastBidder)}
   }
  }
  //Kui ei ühti
  else{
   if (response === false){
      rooms[roomCode].lives[lastBidder]--;
-     if(rooms[roomCode].lives[lastBidder]== 0) { handlePlayerDeath(lastBidder) }
+     if(rooms[roomCode].lives[lastBidder] == 0) { handlePlayerDeath(roomCode, lastBidder) }
   }
   else{
      rooms[roomCode].lives[checkerPlayer]--;
-     if(rooms[roomCode].lives[checkerPlayer] == 0) { handlePlayerDeath(checkerPlayer) }
+     if(rooms[roomCode].lives[checkerPlayer] == 0) { handlePlayerDeath(roomCode, checkerPlayer) }
   }
  }
 }
@@ -275,19 +277,16 @@ export function handleDiceCheck(response, roomCode){
 //Need params väärtused tuleksid frontendist kust seda Bidi submititakse
 export function handleDiceBidSubmit(roomCode, diceValue, diceAmount) {
   for (let i = 0; i < rooms[roomCode].turns.length; i++) {
-     if(turns[i] === true){
-        playerIndex = i;
+     if(rooms[roomCode].turns[i] === true){
+        rooms[roomCode].activeBid.playerIndex = i;
         break;
      }
   }
-  //Määrab, mis Bid on prg laual (mitu täringut keegi (viimasena) arvab, et on laual prg)
-  //Mis täringu väärtus (1,2,3,4,5,6)
+
   rooms[roomCode].activeBid.diceValue = diceValue;
-  //Mitu seda täringut arvatakse et on laual
   rooms[roomCode].activeBid.diceAmount = diceAmount;
-  rooms[roomCode].activeBid.playerIndex = playerIndex;
-  //Muudab turni
-  rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
+  
+  rooms[roomCode].turns = handleTurns(roomCode);
 }
 
 //Veeretab mängu alguses, 
@@ -300,6 +299,7 @@ export function handleDiceRolls(diceArray){
  }
  return diceArray;
 }
+
 // Vaatab kas mäng peaks läbi olema (ainult üks mängija on elus)
 export function checkGameOver() {
   const activePlayers = rooms[roomCode].lives.filter(life => life > 0).length;
@@ -309,9 +309,10 @@ export function checkGameOver() {
      handleGameStart(); // Restardib mängu
   }
 }
+
 //Kui mängjal on elud 0 siis võtame ta mängu loogikast välja 
-export function handlePlayerDeath(i){
-  console.log(`Player ${players[i]} has been eliminated.`);
+export function handlePlayerDeath(roomCode, i){
+  console.log("Player" + rooms[roomCode].players[i] + " has been eliminated.");
 
   rooms[roomCode].turns.splice(i, 1);
   rooms[roomCode].dice.splice(i, 1);

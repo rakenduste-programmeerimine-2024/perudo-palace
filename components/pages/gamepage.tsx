@@ -1,9 +1,8 @@
 "use client"
+
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import { io } from 'socket.io-client';
-import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const socket = io("http://localhost:3030");
@@ -40,15 +39,15 @@ const GamePage: React.FC = () => {
   const roomCode = searchParams.get("roomCode");
   const playerName = searchParams.get("playerName");
   const [isHost, setIsHost] = useState(false);
-  const [players, setPlayers] = useState<
-    { id: number; name: string; bgImage: string; position: string }[]
-  >([]);
-
-  const [bidNumber, setBidNumber] = useState(1); // Number 1-16
+  const [players, setPlayers] = useState<{ id: number; name: string; bgImage: string; position: string }[]>([]);
+  const [diceNumber, setDiceNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
+  const [playerDiceImages, setPlayerDiceImgaes] = useState<string[]>([]);
+  const [isDisplayingDice, setDisplayingDice] = useState(false);
 
+  //#region LISTENERS
 
   // starting
   useEffect(() => {
@@ -77,8 +76,6 @@ const GamePage: React.FC = () => {
     socket.emit("update-room", roomCode);
 
     // Update'i mängijaid
-    const positions = ["bottom", "right", "top", "left"];
-
     const assignPlayerData = (playersList: string[]) =>
       playersList.map((name, index) => ({
         id: index,
@@ -122,38 +119,60 @@ const GamePage: React.FC = () => {
       );
     });
 
-    // display all players dices
-    socket.on("display-all-dices", (dice) => {
-      console.log("Displaying all dices: " + dice)
+    socket.on("generate-dice", (dice) => {
+      console.log(dice);
+      let arrayValue = 0;
+      let diceValue = 0;
+      const initialDiceImages = dicePositions.map(() => {
+        const diceNumber = dice[arrayValue][diceValue]; // Vahemik 1-6
+
+        diceValue++;
+        if (diceValue > 3) {diceValue = 0; arrayValue++; }
+        if (arrayValue > 3) {arrayValue = 0; }
+
+        return `/image/w_dice/dice${diceNumber}.png`;
+      });
+      console.log(initialDiceImages);
+      setRandomDiceImages(initialDiceImages);
     });
 
-    // display this player dices
-    socket.on("display-player-dices", (userId) => {
-      console.log(userId + ' ' + socket.id);
+    socket.on("hide-all-dices", () => {
+      console.log("Hiding all dice!");
 
-      if (userId != socket.id) { return; }
-
-      console.log("Displaying players dices for: " + userId)
+      setDisplayingDice(true);
     });
 
-    // display all hearts (minus need mis on maha lainud)
-    socket.on("display-hearts", (lives, ids) => {
+    socket.on("display-all-dices", () => {
+      console.log("Displaying all dices!")
       
-
-      console.log("Displaying lives: " + lives)
+      setDisplayingDice(true);
     });
 
-    // display hetkest turni
-    socket.on("display-turn", (turns, ids) => {
+    socket.on("display-player-dices", (userName) => {
+      if (userName != playerName) { return; }
+
+      console.log("Displaying players dices for: " + playerName)
+    });
+
+    socket.on("display-hearts", (lives, players) => {
+      for (let i = 0; i < lives.length; i++) {
+        const lifeIndicator = lives[i];
+        const playerName = players[i];
+
+        console.log("Player " + playerName + " has " + lifeIndicator + " lives left!")
+      }
+    });
+
+    socket.on("display-turn", (turns, names) => {
       for (let i = 0; i < turns.length; i++) {
-        console.log("Displaying turns: " + turns)
 
         const turnIndicator = turns[i];
-        const playerId = ids[i];
+        const userName = names[i];
         
-        if (turnIndicator && playerId == socket.id){
+        if (turnIndicator && userName == playerName){
           setIsTurn (true);
           console.log("Your turn!");
+          break;
         }
         else{
           setIsTurn(false);
@@ -161,14 +180,8 @@ const GamePage: React.FC = () => {
       }
     });
 
-    // display hetkest turni
     socket.on("display-current-bid", (activeBid) => {
-      console.log("Displaying current bid: " + activeBid);
-    });
-
-    // display current action
-    socket.on("hide-all-dices", () => {
-      console.log("Hiding all dice!");
+      console.log("Displaying current bid: " + activeBid.diceAmount + " : " + activeBid.diceValue);
     });
 
     return () => {
@@ -176,26 +189,33 @@ const GamePage: React.FC = () => {
       socket.off("current-players");
       socket.off("player-joined");
       socket.off("player-left");
+      socket.off("hide-all-dice");
+      socket.off("display-all-dices");
+      socket.off("display-player-dices");
+      socket.off("display-hearts");
+      socket.off("display-turn");
+      socket.off("display-current-bid");
     };
   }, [roomCode, playerName, router]);
 
+  //#endregion
 
-  // DICES
+  //#region DICES
 
-  // Genereeri täringute pildid ainult üks kord
-  useEffect(() => {
-    const initialDiceImages = dicePositions.map(() => {
-      const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
-      return `/image/w_dice/dice${diceNumber}.png`;
-    });
-    setRandomDiceImages(initialDiceImages);
-  }, []);
+  // // Genereeri täringute pildid ainult üks kord
+  // useEffect(() => {
+  //   const initialDiceImages = dicePositions.map(() => {
+  //     const diceNumber = Math.floor(Math.random() * 6) + 1; // Vahemik 1-6
+  //     return `/image/w_dice/dice${diceNumber}.png`;
+  //   });
+  //   setRandomDiceImages(initialDiceImages);
+  // }, []);
 
   const increaseBid = () => {
-    if (bidNumber < 16) setBidNumber(bidNumber + 1);
+    if (diceNumber < 16) setDiceNumber(diceNumber + 1);
   };
   const decreaseBid = () => {
-    if (bidNumber > 1) setBidNumber(bidNumber - 1);
+    if (diceNumber > 1) setDiceNumber(diceNumber - 1);
   };
   const increaseDice = () => {
     if (diceValue < 6) setDiceValue(diceValue + 1);
@@ -203,8 +223,10 @@ const GamePage: React.FC = () => {
   const decreaseDice = () => {
     if (diceValue > 1) setDiceValue(diceValue - 1);
   };
+  
+  //#endregion
 
-  // FUNCTIONS
+  //#region FUNCTIONS
 
   const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
@@ -234,7 +256,7 @@ const GamePage: React.FC = () => {
     );
   };
 
-  const handleStartGame = (roomCode: number) => {
+  const handleStartGame = () => {
     const playersWithoutPosition = players.filter((player) => !player.position);
 
     if (playersWithoutPosition.length > 0) {
@@ -253,20 +275,6 @@ const GamePage: React.FC = () => {
 
     setPlayers(orderedPlayers); // Update players to reflect the playing order
     setGameStarted(true);
-
-    // Generate dice images for the game
-    const newDiceImages = dicePositions.map(() => {
-      const diceNumber = Math.floor(Math.random() * 6) + 1;
-      return `/image/w_dice/dice${diceNumber}.png`;
-    });
-    setRandomDiceImages(newDiceImages);
-
-    // setGameStarted(true);
-    // const newDiceImages = dicePositions.map(() => {
-    //   const diceNumber = Math.floor(Math.random() * 6) + 1;
-    //   return `/image/w_dice/dice${diceNumber}.png`;
-    // });
-    // setRandomDiceImages(newDiceImages);
   };
 
   const handleLeaveRoom = () => {
@@ -275,28 +283,22 @@ const GamePage: React.FC = () => {
     router.push("/");
   };
 
-  const handlePlaceBid = async (roomCode: number, diceAmount: number, diceValue: number) => {
-   if (isTurn){
-      try {
-         console.log("Placing bid...");
-         console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
-         socket.emit("placed-bid", { roomCode, diceAmount, diceValue });
-     } catch (error) {
-         console.error("Error placing bid:", error);
-     }
-   }
+  const handlePlaceBid = () => {
+    if (!isTurn) { return; }
+
+    console.log("Placing bid...");
+    console.log(`Dice Amount: ${diceNumber}, Dice Value: ${diceValue}`);
+    socket.emit("placed-bid", { roomCode, bidNumber: diceNumber, diceValue });
   };
 
-  const handleBidCheck = async (response: boolean, roomCode: number) => {
+  const handleBidCheck = (response: boolean) => {
     if (isTurn){
-        try {
-          console.log("Challenging bid...");
-          socket.emit("check-bid", { response, roomCode });
-      } catch (error) {
-          console.error("Error placing bid:", error);
-      }
+      console.log("Challenging bid...");
+      socket.emit("check-bid", { response, roomCode });
     }
   };
+  
+  //#endregion
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-800 relative">
@@ -360,7 +362,7 @@ const GamePage: React.FC = () => {
               <Button
                 variant="contained"
                 color="success"
-                onClick={() => handleStartGame(roomCode)}
+                onClick={() => handleStartGame()}
                 sx={{
                   padding: "1rem 2rem",
                   fontSize: "1.25rem",
@@ -378,7 +380,7 @@ const GamePage: React.FC = () => {
             <Button
               variant="contained"
               color="success"
-              onClick={() => handleStartGame(roomCode)}
+              onClick={() => handleStartGame()}
               sx={{
                 padding: "1rem 2rem",
                 fontSize: "1.25rem",
@@ -397,39 +399,66 @@ const GamePage: React.FC = () => {
         <>
           {/* Mängu vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
-            {randomDiceImages.map((diceImage, index) => (
-              <div
-                key={index}
-                className="absolute"
-                style={{
-                  ...dicePositions[index],
-                  width: "3rem",
-                  height: "3rem",
-                  backgroundImage: `url('${diceImage}')`,
-                  backgroundSize: "contain",
-                  backgroundRepeat: "no-repeat",
-                }}
-              ></div>
-            ))}
+            {/*dices*/}
+            {isDisplayingDice ? (
+              <>
+                {randomDiceImages.map((diceImage, index) => (
+                  <div
+                    key={index}
+                    className="absolute"
+                    style={{
+                      ...dicePositions[index],
+                      width: "3rem",
+                      height: "3rem",
+                      backgroundImage: `url('${diceImage}')`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                  }}/>
+                ))}
+              </>
+            ) : (
+              <>
+                {playerDiceImages.map((diceImage, index) => (
+                  <div
+                    key={index}
+                    className="absolute"
+                    style={{
+                      ...dicePositions[index],
+                      width: "3rem",
+                      height: "3rem",
+                      backgroundImage: `url('${diceImage}')`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                  }}/>
+                ))}
+              </>
+            )}
             {/*cups*/}
-            {[
-              { top: "41%", left: "10%" }, // Vasakul
-              { top: "15%", right: "44%" }, // Üleval
-              { bottom: "45%", right: "10%" }, // Paremal
-            ].map((style, index) => (
-              <div
-                key={index}
-                className="absolute"
-                style={{
-                  ...style,
-                  width: "6rem",
-                  height: "6rem",
-                  backgroundImage: "url('/image/cup1.png')",
-                  backgroundSize: "contain",
-                  backgroundRepeat: "no-repeat",
-                }}
-              ></div>
-            ))}
+            {isDisplayingDice ? (
+              <>
+              </>
+            ) : (
+              <>
+                {[
+                  { top: "41%", left: "10%" }, // Vasakul
+                  { top: "15%", right: "44%" }, // Üleval
+                  { bottom: "45%", right: "10%" }, // Paremal
+                  { bottom: "15%", right: "44%" }
+                ].map((style, index) => (
+                  <div
+                    key={index}
+                    className="absolute"
+                    style={{
+                      ...style,
+                      width: "6rem",
+                      height: "6rem",
+                      backgroundImage: "url('/image/cup1.png')",
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                    }}/>
+                ))}
+              </>
+            )}
 
             {players.map((player) => (
               <div
@@ -461,7 +490,7 @@ const GamePage: React.FC = () => {
                   ↑
                 </button>
                 <div className="text-4xl font-bold text-center">
-                  {bidNumber}
+                  {diceNumber}
                 </div>
                 <button
                   className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
@@ -491,7 +520,7 @@ const GamePage: React.FC = () => {
             </div>
             {/* Dice Image Section */}
             <div className="mt-4 flex items-center justify-center space-x-4">
-              <div className="text-4xl font-bold">{bidNumber}</div>
+              <div className="text-4xl font-bold">{diceNumber}</div>
               <div className="text-4xl font-bold">X</div>
               <div
                 className="w-16 h-16 bg-cover bg-center"
@@ -500,7 +529,9 @@ const GamePage: React.FC = () => {
                 }}
               ></div>
             </div>
-            <button className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold">
+            <button 
+              className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold"
+              onClick={() => handlePlaceBid()}>
               Place Bid
             </button>
           </div>
@@ -518,6 +549,7 @@ const GamePage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
+                onClick={() => handleBidCheck(true)}
               >
                 <img
                   src="/image/sword.png"
@@ -546,6 +578,7 @@ const GamePage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
+                onClick={() => handleBidCheck(false)}
               >
                 <img
                   src="/image/arrow.png"
@@ -582,6 +615,7 @@ const getPositionClasses = (position: string) => {
       return "";
   }
 };
+
 //Mängjate profiilid
 interface PlayerProps {
   name: string;
