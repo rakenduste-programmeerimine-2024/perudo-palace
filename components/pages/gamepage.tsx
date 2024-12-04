@@ -1,8 +1,8 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -19,7 +19,7 @@ const socket = io("http://localhost:3030");
 // useEffect(() => {
 //    socket.on("connect", () => {
 //      console.log("Connected to socket server, socket ID:", socket.id);
-     
+
 //      setSocketId(socket.id as string);
 //    });
 
@@ -40,34 +40,22 @@ const socket = io("http://localhost:3030");
 //lõpp
 
 // display all players dices
-socket.on("display-all-dices", (dice) => {
-  
-});
+socket.on("display-all-dices", (dice) => {});
 
 // display this player dices
-socket.on("display-player-dices", (userId) => {
-  
-});
+socket.on("display-player-dices", (userId) => {});
 
 // display all hearts (minus need mis on maha lainud)
-socket.on("display-hearts", (lives) => {
-  
-});
+socket.on("display-hearts", (lives) => {});
 
 // display hetkest turni
-socket.on("display-turn", (turns) => {
-  
-});
+socket.on("display-turn", (turns) => {});
 
 // display hetkest turni
-socket.on("display-current-bid", (activeBid) => {
-  
-});
+socket.on("display-current-bid", (activeBid) => {});
 
 // display current action
-socket.on("display-action", (action) => {
-  
-});
+socket.on("display-action", (action) => {});
 
 //Täringute asetamine ekraanil
 const dicePositions = [
@@ -109,14 +97,12 @@ const GamePage: React.FC = () => {
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
 
-//   const [players, setPlayers] = useState([
-//     { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
-//     { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
-//     { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
-//     { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
-//   ]);
-
-
+  //   const [players, setPlayers] = useState([
+  //     { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
+  //     { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
+  //     { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
+  //     { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
+  //   ]);
 
   // Hoia täringute pildid seisundis
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]);
@@ -248,7 +234,7 @@ const GamePage: React.FC = () => {
       )
     );
   };
-//vb roomCode on stringina mdea prg
+  //vb roomCode on stringina mdea prg
 
   const handleStartGame = (roomCode: number) => {
     const playersWithoutPosition = players.filter((player) => !player.position);
@@ -291,33 +277,55 @@ const GamePage: React.FC = () => {
     router.push("/");
   };
 
-  const handlePlaceBid = async (roomCode: number, diceAmount: number, diceValue: number) => {
-   if (isTurn){
+  const handlePlaceBid = async (
+    roomCode: number,
+    diceAmount: number,
+    diceValue: number
+  ) => {
+    if (isTurn) {
       try {
-         console.log("Placing bid...");
-         console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
-         socket.emit("placed-bid", { roomCode, diceAmount, diceValue });
-     } catch (error) {
-         console.error("Error placing bid:", error);
-     }
-   }
-};
-const handleBidCheck = async (response: boolean, roomCode: number) => {
-   if (isTurn){
+        console.log("Placing bid...");
+        console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
+        socket.emit("placed-bid", { roomCode, diceAmount, diceValue });
+      } catch (error) {
+        console.error("Error placing bid:", error);
+      }
+    }
+  };
+  const handleBidCheck = async (response: boolean, roomCode: number) => {
+    if (isTurn) {
       try {
-         console.log("Challenging bid...");
-         socket.emit("check-bid", { response, roomCode });
-     } catch (error) {
-         console.error("Error placing bid:", error);
-     }
-   }
-};
-
+        console.log("Challenging bid...");
+        socket.emit("check-bid", { response, roomCode });
+      } catch (error) {
+        console.error("Error placing bid:", error);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-800 relative">
       {!gameStarted ? (
         <>
+          {/* Ootamisala, enne positsioonide valimist */}
+          <div className="absolute top-50 left-0 flex flex-col items-center space-y-4 bg-black bg-opacity-50 p-4 rounded-lg max-h-full">
+            {players
+              .filter((player) => !player.position)
+              .map((player) => (
+                <div key={player.id} className="flex flex-col items-center">
+                  <Player
+                    key={player.id}
+                    bgImage={player.bgImage}
+                    clickable={!gameStarted}
+                    name={""}
+                  />
+                  <span className="mt-2 text-white font-semibold">
+                    {player.name}
+                  </span>{" "}
+                  {/* Name below the image */}
+                </div>
+              ))}
+          </div>
           {/* Lobby vaade */}
           <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {["bottom", "right", "top", "left"].map((position) => {
@@ -353,19 +361,6 @@ const handleBidCheck = async (response: boolean, roomCode: number) => {
                 </div>
               );
             })}
-            {/* Ootamisala, enne positsioonide valimist */}
-            <div className="absolute top-0 left-0 flex flex-col items-center space-y-4">
-              {players
-                .filter((player) => !player.position)
-                .map((player) => (
-                  <Player
-                    key={player.id}
-                    name={player.name}
-                    bgImage={player.bgImage}
-                    clickable={!gameStarted}
-                  />
-                ))}
-            </div>
           </div>
 
           {/* Start Game ja Leave nupp */}
@@ -394,7 +389,7 @@ const handleBidCheck = async (response: boolean, roomCode: number) => {
             <Button
               variant="contained"
               color="success"
-              onClick={() => handleStartGame(roomCode)}
+              onClick={() => handleLeaveRoom(roomCode)}
               sx={{
                 padding: "1rem 2rem",
                 fontSize: "1.25rem",
