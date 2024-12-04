@@ -44,9 +44,11 @@ const Join: React.FC = () => {
       setError("Enter both your name and the room code.");
       return;
     }
+    
+    console.log("id: " + socketId + " og: " + socket.id);
 
     setError("");
-    socket.emit("join-room", roomCode, playerName, socketId);
+    socket.emit("join-room", roomCode, playerName, socket.id);
 
     // addToDB();
   };

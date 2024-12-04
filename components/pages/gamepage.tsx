@@ -8,67 +8,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const socket = io("http://localhost:3030");
 
-//otse create koodist
-// const [hostName, setHostName] = useState("");
-// const [roomCode, setRoomCode] = useState("");
-// const [error, setError] = useState("");
-// const router = useRouter();
-// const supabase = createClient();
-// const [socketId, setSocketId] = useState<string>("");
-
-// useEffect(() => {
-//    socket.on("connect", () => {
-//      console.log("Connected to socket server, socket ID:", socket.id);
-     
-//      setSocketId(socket.id as string);
-//    });
-
-//    socket.on("room-error", (message) => {
-//      setError(message);
-//    });
-
-//    socket.on("room-created", (roomCode) => {
-//      router.push(`/room?roomCode=${roomCode}&playerName=${hostName}`);
-//    });
-
-//    return () => {
-//      socket.off("connect");
-//      socket.off("room-error");
-//      socket.off("room-created");
-//    };
-//  }, [router, hostName]);
-//lõpp
-
-// display all players dices
-socket.on("display-all-dices", (dice) => {
-  
-});
-
-// display this player dices
-socket.on("display-player-dices", (userId) => {
-  
-});
-
-// display all hearts (minus need mis on maha lainud)
-socket.on("display-hearts", (lives) => {
-  
-});
-
-// display hetkest turni
-socket.on("display-turn", (turns) => {
-  
-});
-
-// display hetkest turni
-socket.on("display-current-bid", (activeBid) => {
-  
-});
-
-// display current action
-socket.on("display-action", (action) => {
-  
-});
-
 //Täringute asetamine ekraanil
 const dicePositions = [
   // Define täringu positsioonid
@@ -108,19 +47,10 @@ const GamePage: React.FC = () => {
   const [bidNumber, setBidNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
-
-//   const [players, setPlayers] = useState([
-//     { id: 1, name: "Player 1", bgImage: "url('/image/smile/smile.jpg')", position: "bottom" },
-//     { id: 2, name: "Player 2", bgImage: "url('/image/smile/smile2.jpg')", position: "right" },
-//     { id: 3, name: "Player 3", bgImage: "url('/image/smile/smile5.jpg')", position: "top" },
-//     { id: 4, name: "Player 4", bgImage: "url('/image/smile/smile6.jpg')", position: "left" },
-//   ]);
+  const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
 
 
-
-  // Hoia täringute pildid seisundis
-  const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]);
-
+  // starting
   useEffect(() => {
     socket.on("start-game", () => {
       setGameStarted(true);
@@ -155,7 +85,8 @@ const GamePage: React.FC = () => {
         name,
         bgImage: `/image/smile/smile${(index % 6) + 1}.jpg`, // Prgu käi lihtsalt pildid läbi
         position: "", // Algselt pole kellelgil positsiooni
-      }));
+      }
+    ));
 
     socket.on("current-players", (playersList: string[]) => {
       setPlayers(assignPlayerData(playersList));
@@ -191,6 +122,55 @@ const GamePage: React.FC = () => {
       );
     });
 
+    // display all players dices
+    socket.on("display-all-dices", (dice) => {
+      console.log("Displaying all dices: " + dice)
+    });
+
+    // display this player dices
+    socket.on("display-player-dices", (userId) => {
+      console.log(userId + ' ' + socket.id);
+
+      if (userId != socket.id) { return; }
+
+      console.log("Displaying players dices for: " + userId)
+    });
+
+    // display all hearts (minus need mis on maha lainud)
+    socket.on("display-hearts", (lives, ids) => {
+      
+
+      console.log("Displaying lives: " + lives)
+    });
+
+    // display hetkest turni
+    socket.on("display-turn", (turns, ids) => {
+      for (let i = 0; i < turns.length; i++) {
+        console.log("Displaying turns: " + turns)
+
+        const turnIndicator = turns[i];
+        const playerId = ids[i];
+        
+        if (turnIndicator && playerId == socket.id){
+          setIsTurn (true);
+          console.log("Your turn!");
+        }
+        else{
+          setIsTurn(false);
+        }
+      }
+    });
+
+    // display hetkest turni
+    socket.on("display-current-bid", (activeBid) => {
+      console.log("Displaying current bid: " + activeBid);
+    });
+
+    // display current action
+    socket.on("hide-all-dices", () => {
+      console.log("Hiding all dice!");
+    });
+
     return () => {
       socket.off("update-positions");
       socket.off("current-players");
@@ -198,6 +178,9 @@ const GamePage: React.FC = () => {
       socket.off("player-left");
     };
   }, [roomCode, playerName, router]);
+
+
+  // DICES
 
   // Genereeri täringute pildid ainult üks kord
   useEffect(() => {
@@ -220,6 +203,8 @@ const GamePage: React.FC = () => {
   const decreaseDice = () => {
     if (diceValue > 1) setDiceValue(diceValue - 1);
   };
+
+  // FUNCTIONS
 
   const handleAvatarClick = (clickedPosition: string) => {
     if (gameStarted) return;
@@ -248,7 +233,6 @@ const GamePage: React.FC = () => {
       )
     );
   };
-//vb roomCode on stringina mdea prg
 
   const handleStartGame = (roomCode: number) => {
     const playersWithoutPosition = players.filter((player) => !player.position);
@@ -301,18 +285,18 @@ const GamePage: React.FC = () => {
          console.error("Error placing bid:", error);
      }
    }
-};
-const handleBidCheck = async (response: boolean, roomCode: number) => {
-   if (isTurn){
-      try {
-         console.log("Challenging bid...");
-         socket.emit("check-bid", { response, roomCode });
-     } catch (error) {
-         console.error("Error placing bid:", error);
-     }
-   }
-};
+  };
 
+  const handleBidCheck = async (response: boolean, roomCode: number) => {
+    if (isTurn){
+        try {
+          console.log("Challenging bid...");
+          socket.emit("check-bid", { response, roomCode });
+      } catch (error) {
+          console.error("Error placing bid:", error);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-800 relative">

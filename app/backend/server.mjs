@@ -19,22 +19,24 @@ io.on("connection", (socket) => {
         "Room with that code already exists."
       );
     } else {
-    //Teeb kõik vajalikud muutjad mängu ja lobby jaoks
-    rooms[roomCode] = { 
-      host: hostName,
-      players: [hostName],
-      playerIds: [hostId],
-      turns: null, 
-      dice: null, 
-      lives: null, 
-      activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
-      positions: {
-         position1: null,
-         position2: null,
-         position3: null,
-         position4: null,
-       },
-    };
+      //Teeb kõik vajalikud muutjad mängu ja lobby jaoks
+      rooms[roomCode] = { 
+        host: hostName,
+        players: [hostName],
+        playerIds: [hostId],
+        turns: null, 
+        dice: null, 
+        lives: null, 
+        activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
+        positions: {
+          position1: null,
+          position2: null,
+          position3: null,
+          position4: null,
+        },
+      };
+
+      console.log("Users in room: " + rooms[roomCode].playerIds);
 
       socket.join(roomCode);
       io.to(roomCode).emit("room-created", roomCode);
@@ -110,10 +112,13 @@ io.on("connection", (socket) => {
     handleGameStart(roomCode);
 
     io.to(roomCode).emit("start-game");
-    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
-    io.to(roomCode).emit("display-player-dices", socket.id); // naitab ainult playeri elusi
+
+    rooms[roomCode].playerIds.forEach(id => {
+      io.to(roomCode).emit("display-player-dices", id); // naitab ainult playeri dice
+    });
+    
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi
-    io.to(roomCode).emit("display-turn", rooms[roomCode].turns); // naitab kelle turn hetkel on
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].playerIds); // naitab kelle turn hetkel on
   });
   
   socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
@@ -161,8 +166,11 @@ io.on("connection", (socket) => {
 
     handleDiceCheck(roomCode);
 
-    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives); // naitab koikide inimeste elusi see hetk
+    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
+
+    handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
+
     io.to(roomCode).emit("display-player-dices", socket.id); // naitab ainult playeri elusi
   });
 
@@ -187,6 +195,10 @@ export function handleGameStart(roomCode) {
   rooms[roomCode].dice = Array(rooms[roomCode].players.length).fill(null).map(() => Array(4).fill(1));
   rooms[roomCode].lives = Array(rooms[roomCode].players.length).fill(3);
 
+  handleNewGameSetup(roomCode);
+}
+
+function handleNewGameSetup(roomCode){
   //Kõikidele mängjatele täringute veeretamine
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
   //Mängu alguse turni seadmine
@@ -256,8 +268,6 @@ export function handleDiceCheck(response, roomCode){
      if(rooms[roomCode].lives[checkerPlayer] == 0) { handlePlayerDeath(checkerPlayer) }
   }
  }
- rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
- rooms[roomCode].turns = handleTurns(rooms[roomCode].turns, roomCode);
 }
 
 //Mängjia paneb enda käigu ajal mitu, 

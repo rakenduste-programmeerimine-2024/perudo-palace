@@ -18,7 +18,7 @@ const Create: React.FC = () => {
   const router = useRouter();
   const supabase = createClient();
   const [socketId, setSocketId] = useState<string>("");
-
+  
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Connected to socket server, socket ID:", socket.id);
@@ -47,7 +47,10 @@ const Create: React.FC = () => {
     }
 
     setError("");
-    socket.emit("create-room", roomCode, hostName, socketId);
+
+    console.log("id: " + socketId + " og: " + socket.id);
+
+    socket.emit("create-room", roomCode, hostName, socket.id);
 
     // addToDB();
   };
