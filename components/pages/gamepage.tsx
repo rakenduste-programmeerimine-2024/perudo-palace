@@ -5,6 +5,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import { io } from 'socket.io-client';
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
+import GameOverModal from "../GameOverModal"; // Veendu, et failitee oleks õige
 
 const socket = io("http://localhost:3030");
 
@@ -95,6 +96,8 @@ const dicePositions = [
 
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
+  const handlePlayAgain = () => {};
+
   const [gameStarted, setGameStarted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -460,6 +463,20 @@ const handleBidCheck = async (response: boolean, roomCode: number) => {
               </div>
             ))}
           </div>
+
+      {/* Läbipaistev roheline kast */}
+      <div
+className="fixed inset-0 flex flex-col items-center justify-center text-white p-6 bg-green-800 bg-opacity-80"
+
+      >
+        {/* GameOverModal komponent */}
+        <GameOverModal
+          onPlayAgain={handlePlayAgain}
+          onLeaveRoom={handleLeaveRoom}
+          winnerName="John Doe" // Näidis-võitja nimi
+        />
+      </div>
+
 
           {/* Bid Number ja Dice Face Selector */}
           <div
