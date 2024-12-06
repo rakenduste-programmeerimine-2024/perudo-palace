@@ -438,9 +438,9 @@ const GamePage: React.FC = () => {
 {/*             
             /*cups*/}
             {[
-              { top: "41%", left: "10%" }, // Vasakul
-              { top: "15%", right: "44%" }, // Üleval
-              { bottom: "45%", right: "10%" }, // Paremal
+              { top: "35%", left: "10%" }, // Vasakul
+              { top: "15%", right: "42%" }, // Üleval
+              { bottom: "35%", right: "10%" }, // Paremal
             ].map((style, index) => (
               <div
                 key={index}
