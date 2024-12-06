@@ -84,6 +84,7 @@ const dicePositions = [
 
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
+  const [showCups, setShowCups] = useState(true); // Vaikimisi true (kuvatakse)  
   const [isGameOver, setIsGameOver] = useState(false);
   const handlePlayAgain = () => {
   };
@@ -367,7 +368,7 @@ const GamePage: React.FC = () => {
           </div>
 
           {/* Start Game ja Leave nupp */}
-          <div className="absolute bottom-[10rem] right-[5rem]">
+          <div className="absolute top-[1rem] left-[7rem]">
             <div className="bg-gray-800 text-white p-4 rounded-lg shadow-lg w-full max-w-xs text-center">
               <p className="font-semibold text-lg">
                 Room Code: <span className="font-bold">{roomCode}</span>
@@ -435,26 +436,29 @@ const GamePage: React.FC = () => {
                 }}
               ></div>
             ))}
-{/*             
-            /*cups*/}
-            {[
-              { top: "35%", left: "10%" }, // Vasakul
-              { top: "15%", right: "42%" }, // Üleval
-              { bottom: "35%", right: "10%" }, // Paremal
-            ].map((style, index) => (
-              <div
-                key={index}
-                className="absolute"
-                style={{
-                  ...style,
-                  width: "6rem",
-                  height: "6rem",
-                  backgroundImage: "url('/image/cup1.png')",
-                  backgroundSize: "contain",
-                  backgroundRepeat: "no-repeat",
-                }}
-              ></div>
-            ))}
+          {/* Tingimuslik cups renderdamine */}
+          {showCups && (
+            <>
+              {[
+                { top: "35%", left: "10%" }, // Vasakul
+                { top: "15%", right: "42%" }, // Üleval
+                { bottom: "35%", right: "10%" }, // Paremal
+              ].map((style, index) => (
+                <div
+                  key={index}
+                  className="absolute"
+                  style={{
+                    ...style,
+                    width: "6rem",
+                    height: "6rem",
+                    backgroundImage: "url('/image/cup1.png')",
+                    backgroundSize: "contain",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                ></div>
+              ))}
+            </>
+          )}
  
             {players.map((player) => (
               <div
@@ -469,10 +473,35 @@ const GamePage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Bid Number ja Dice Face Selector */}
+          <div
+            className="absolute top-[1rem] left-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
+            style={{ width: "200px", height: "150px" }} // Kohandatud laius ja kõrgus
+          >
+            <h1 className="text-xl font-bold mb-4">Current Bid</h1>
+            {/* Horisontaalne paigutus */}
+            <div className="flex items-center justify-center space-x-4">
+              {/* Bid Number */}
+                <div className="text-3xl font-bold">{bidNumber}</div>
+              </div>
+              {/* "X" ikoon */}
+              <div className="text-3xl font-bold">X</div>
+              {/* Dice koos nooltega */}
+              <div className="flex flex-col items-center">
+                <div
+                  className="w-16 h-16 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+                  }}
+                ></div>
+              </div>
+            </div>
+
 
           {/* Bid Number ja Dice Face Selector */}
           <div
-            className="absolute bottom-[3rem] right-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
+            className="absolute bottom-[2rem] right-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
             style={{ width: "200px", height: "310px" }} // Kohandatud laius ja kõrgus
           >
             <h1 className="text-xl font-bold mb-4">Your Bid</h1>
@@ -525,7 +554,7 @@ const GamePage: React.FC = () => {
           </div>
 
           {/* Sword ja Arrow nupud */}
-          <div className="absolute bottom-[4rem] left-[4rem] flex space-x-4 items-center">
+          <div className="absolute bottom-[2rem] left-[4rem] flex space-x-4 items-center">
             {/* Sword nupp ja tekst */}
             <div className="flex flex-col items-center">
               <IconButton
