@@ -44,7 +44,9 @@ const GamePage: React.FC = () => {
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
-  const [playerDiceImages, setPlayerDiceImgaes] = useState<string[]>([]);
+  const [playerDiceImages, setPlayerDiceImages] = useState<
+  { image: string; position: { bottom?: string; left?: string; top?: string; right?: string } }[]
+>([]);
   const [isDisplayingDice, setDisplayingDice] = useState(false);
   const [hasDice, setHasDice] = useState(false);
 
@@ -66,7 +68,10 @@ const GamePage: React.FC = () => {
       socket.off("room-host");
     };
   }, []);
-
+  //test players
+   useEffect(() => {
+      console.log("Players after position update:", players);
+   }, [players]);
   // Ruumi loogika useEffect eraldi
   useEffect(() => {
     if (!roomCode || !playerName) {
@@ -140,27 +145,43 @@ const GamePage: React.FC = () => {
       setRandomDiceImages(diceImages);
     });
 
-    socket.on("display-player-dice", (playerNumber, userName, dice) =>{
-      if (userName == playerName) { return; }
+    socket.on("display-player-dice", (playerNumber, userName, dice, position) =>{
+      if (userName !== playerName) { return; }
 
-      const scanningPositionStart =
-        playerNumber == 0 ? 0 :
-        playerNumber == 1 ? 4 :
-        playerNumber == 2 ? 8 : 12;
+      console.log("Player pos: ",  position);
 
-      let diceValue = 0;
+      //leiab õige mängja positsiooni lauas ja selle järgi paneme ka täringud
+      const cplayerPosition = position;
+      console.log("antud positsioon:" + position)
+      if (!cplayerPosition || !["bottom", "left", "top", "right"].includes(cplayerPosition)) {
+        console.error("Invalid player position:", cplayerPosition);
+      }
+      
+      const positionMap: {
+         "bottom": [number, number];
+         "left": [number, number];
+         "top": [number, number];
+         "right": [number, number];
+       } = {
+         "bottom": [0, 4],
+         "left": [4, 8],
+         "top": [8, 12],
+         "right": [12, 16],
+       };
+      //valib mis mängja täringuid näeb 
       const playerSet = dice[playerNumber];
-      const diceImages = dicePositions.slice(scanningPositionStart, scanningPositionStart + 4).map(() => {
-        const diceNumber = playerSet[diceValue];
-
-        diceValue++;
-        if (diceValue > 3) {diceValue = 0; }
-
-        return `/image/w_dice/dice${diceNumber}.png`;
-      });
-
-      console.log(diceImages);
-      setPlayerDiceImgaes(diceImages);
+       //vaatab mängjia indexit(playerNumber) ja võtab õiged kordinaadid objectist
+      const [start, end] = positionMap[cplayerPosition as "bottom" | "left" | "top" | "right"] || [0, 4];
+      const diceImagesWithPositions = dicePositions.slice(start, end).map((position, index) => {
+         const diceNumber = playerSet[index]; // Get the dice number for this position
+         return {
+           image: `/image/w_dice/dice${diceNumber}.png`,
+           position, // Include the position data from dicePositions
+         };
+       });
+       
+       // Update the state
+       setPlayerDiceImages(diceImagesWithPositions);
     });
 
     socket.on("hide-all-dices", () => {
@@ -280,8 +301,9 @@ const GamePage: React.FC = () => {
     const orderedPlayers = players
       .filter((player) => order.includes(player.position)) // Filter players with valid positions
       .sort((a, b) => order.indexOf(a.position) - order.indexOf(b.position)); // Sort by position
-
+    console.log("mängjiad enne start: " + players)
     setPlayers(orderedPlayers); // Update players to reflect the playing order
+    console.log("mängjiad prst start: " + players)
     setGameStarted(true);
   };
 
@@ -333,6 +355,7 @@ const GamePage: React.FC = () => {
                       name={playerInPosition.name}
                       bgImage={playerInPosition.bgImage}
                       clickable={!gameStarted}
+                      hearts={3}
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
@@ -357,6 +380,7 @@ const GamePage: React.FC = () => {
                     name={player.name}
                     bgImage={player.bgImage}
                     clickable={!gameStarted}
+                    hearts={3}
                   />
                 ))}
             </div>
@@ -388,7 +412,7 @@ const GamePage: React.FC = () => {
             <Button
               variant="contained"
               color="success"
-              onClick={() => handleStartGame()}
+              onClick={() => handleLeaveRoom()}
               sx={{
                 padding: "1rem 2rem",
                 fontSize: "1.25rem",
@@ -428,17 +452,18 @@ const GamePage: React.FC = () => {
               <>
                 {playerDiceImages.map((diceImage, index) => (
                   <div
-                    key={index}
-                    className="absolute"
-                    style={{
-                      ...dicePositions[index],
-                      width: "3rem",
-                      height: "3rem",
-                      backgroundImage: `url('${diceImage}')`,
-                      backgroundSize: "contain",
-                      backgroundRepeat: "no-repeat",
-                  }}/>
-                ))}
+                     key={index}
+                     className="absolute"
+                     style={{
+                        ...diceImage.position,
+                        width: "3rem",
+                        height: "3rem",
+                        backgroundImage: `url('${diceImage.image}')`,
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                     }}
+                  />
+                  ))}
               </>
             )}
             {/*cups*/}
@@ -477,6 +502,8 @@ const GamePage: React.FC = () => {
                   name={player.name}
                   bgImage={player.bgImage}
                   hearts={3}
+                  clickable={true}
+                  
                 />
               </div>
             ))}
@@ -635,8 +662,10 @@ interface PlayerProps {
 const Player: React.FC<{
   name: string;
   bgImage: string;
+  hearts: number;
   clickable: boolean;
-}> = ({ name, bgImage, clickable }) => {
+  
+}> = ({ name, bgImage, clickable, hearts }) => {
   return (
     <div
       className={`w-16 h-16 rounded-full border-4 ${

@@ -122,7 +122,8 @@ io.on("connection", (socket) => {
 
     //dice displaying
     for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
-      io.to(roomCode).emit("display-player-dice", playerNumber, rooms[roomCode].players[playerNumber], rooms[roomCode].dice); // naitab ainult playeri dice
+      console.log("playernumber:" + playerNumber)
+      io.to(roomCode).emit("display-player-dice", playerNumber, rooms[roomCode].players[playerNumber], rooms[roomCode].dice, rooms[roomCode].positions['position' + (playerNumber + 1)]); // naitab ainult playeri dice
     }
 
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi
@@ -163,7 +164,7 @@ io.on("connection", (socket) => {
 
     // Assign'i positsioon'id
     room.positions[positionKey] = position;
-
+    console.log("positsioonid: " + JSON.stringify(room.positions))
     // saada positsioonid lobby'sse
     io.to(roomCode).emit("update-positions", room.positions);
   });
