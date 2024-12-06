@@ -300,8 +300,8 @@ export function checkGameOver() {
   const activePlayers = rooms[roomCode].lives.filter(life => life > 0).length;
 
   if (activePlayers === 1) {
-     console.log("Game Over! Restarting game...");
-     handleGameStart(); // Restardib mängu
+     console.log("Game Over!");
+     io.to(roomCode).emit("game-over")
   }
 }
 
@@ -313,5 +313,5 @@ export function handlePlayerDeath(roomCode, i){
   rooms[roomCode].dice.splice(i, 1);
   rooms[roomCode].lives.splice(i, 1);
 
-  checkGameOver();
+  checkGameOver(roomCode);
 }

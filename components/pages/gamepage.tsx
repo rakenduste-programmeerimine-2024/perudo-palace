@@ -9,7 +9,6 @@ const socket = io("http://localhost:3030");
 
 //Täringute asetamine ekraanil
 const dicePositions = [
-  // Define täringu positsioonid
   { bottom: "20%", left: "47%" }, //alumine
   { bottom: "20%", left: "41%" }, //alumine
   { bottom: "32%", left: "47%" }, //alumine
@@ -30,7 +29,16 @@ const dicePositions = [
   { bottom: "47%", right: "16%" }, //parem
   { bottom: "35%", right: "16%" }, //parem
 ];
+//Cuppide asetamine ekraanil
+const cupPositionsMap = {
+   bottom: { top: "65%", right: "44%" }, // all
 
+   left: { top: "41%", right: "80%" }, // Vasakul
+
+   top:{ top: "15%", right: "44%" }, // Üleval
+
+   right: { top: "41%", right: "10%" } // Paremal
+}
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -46,10 +54,16 @@ const GamePage: React.FC = () => {
   const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
   const [playerDiceImages, setPlayerDiceImages] = useState<
   { image: string; position: { bottom?: string; left?: string; top?: string; right?: string } }[]
->([]);
+   >([]);
   const [isDisplayingDice, setDisplayingDice] = useState(false);
   const [hasDice, setHasDice] = useState(false);
-
+  const [cupPositions, setCupPositions] = useState<
+  { position: string, coordinates: {
+      top: string;
+      right: string;
+      };}[]
+   >([]);
+   const [gameOver, setGameOver] = useState(false)   
   //#region LISTENERS
 
   // starting
@@ -151,12 +165,13 @@ const GamePage: React.FC = () => {
       console.log("Player pos: ",  position);
 
       //leiab õige mängja positsiooni lauas ja selle järgi paneme ka täringud
-      const cplayerPosition = position;
+      const playerPosition = position;
       console.log("antud positsioon:" + position)
-      if (!cplayerPosition || !["bottom", "left", "top", "right"].includes(cplayerPosition)) {
-        console.error("Invalid player position:", cplayerPosition);
+      if (!playerPosition || !["bottom", "left", "top", "right"].includes(playerPosition)) {
+        console.error("Invalid player position:", playerPosition);
       }
       
+      //Täringute positsoonide indexid oleneds mis kohas mängja on
       const positionMap: {
          "bottom": [number, number];
          "left": [number, number];
@@ -168,20 +183,34 @@ const GamePage: React.FC = () => {
          "top": [8, 12],
          "right": [12, 16],
        };
+
       //valib mis mängja täringuid näeb 
       const playerSet = dice[playerNumber];
        //vaatab mängjia indexit(playerNumber) ja võtab õiged kordinaadid objectist
-      const [start, end] = positionMap[cplayerPosition as "bottom" | "left" | "top" | "right"] || [0, 4];
+      const [start, end] = positionMap[playerPosition as "bottom" | "left" | "top" | "right"] || [0, 4];
       const diceImagesWithPositions = dicePositions.slice(start, end).map((position, index) => {
-         const diceNumber = playerSet[index]; // Get the dice number for this position
+         const diceNumber = playerSet[index]; //Võtab õige mängja täringuid
          return {
            image: `/image/w_dice/dice${diceNumber}.png`,
-           position, // Include the position data from dicePositions
+           position,
          };
        });
-       
-       // Update the state
-       setPlayerDiceImages(diceImagesWithPositions);
+
+      // Filtreerin cuppide positsioonid
+      const filteredCupPositions = Object.entries(cupPositionsMap)
+      .filter(([cPosition]) => cPosition !== playerPosition)
+      .map(([cPosition, coordinates]) => ({
+        position: cPosition,
+        coordinates: {
+          top: `${coordinates.top}`,
+          right: `${coordinates.right}`,
+        },
+      }));
+
+      console.log("cuppide kordinaadid?: ",filteredCupPositions)
+      //salvestab kordinaadid, et neid saaks lehel kasutada
+      setCupPositions(filteredCupPositions);
+      setPlayerDiceImages(diceImagesWithPositions);
     });
 
     socket.on("hide-all-dices", () => {
@@ -214,10 +243,13 @@ const GamePage: React.FC = () => {
         if (turnIndicator && userName == playerName){
           setIsTurn (true);
           console.log("Your turn!");
+          alert("Your turn!");
           break;
         }
         else{
           setIsTurn(false);
+          console.log("Not your turn!");
+          alert("Not your turn!");
         }
       }
     });
@@ -225,7 +257,9 @@ const GamePage: React.FC = () => {
     socket.on("display-current-bid", (activeBid) => {
       console.log("Displaying current bid: " + activeBid.diceAmount + " : " + activeBid.diceValue);
     });
-
+    socket.on("game-over", () => {
+      setGameOver(true)
+    })
     return () => {
       socket.off("update-positions");
       socket.off("current-players");
@@ -471,26 +505,22 @@ const GamePage: React.FC = () => {
               <>
               </>
             ) : (
-              <>
-                {[
-                  { top: "41%", left: "10%" }, // Vasakul
-                  { top: "15%", right: "44%" }, // Üleval
-                  { bottom: "45%", right: "10%" }, // Paremal
-                  //{ bottom: "15%", right: "44%" } // all
-                ].map((style, index) => (
-                  <div
-                    key={index}
-                    className="absolute"
-                    style={{
-                      ...style,
-                      width: "6rem",
-                      height: "6rem",
-                      backgroundImage: "url('/image/cup1.png')",
-                      backgroundSize: "contain",
-                      backgroundRepeat: "no-repeat",
-                    }}/>
-                ))}
-              </>
+               <>
+                  {cupPositions.map((cupPos, index) => (
+                     <div
+                        key={index}
+                        className="absolute"
+                        style={{
+                        ...cupPos.coordinates, 
+                        width: "6rem",
+                        height: "6rem",
+                        backgroundImage: "url('/image/cup1.png')",
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                        }}
+                     />
+                  ))}
+               </>
             )}
 
             {players.map((player) => (
