@@ -84,7 +84,6 @@ const dicePositions = [
 
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
-  const [showCups, setShowCups] = useState(true); // Vaikimisi true (kuvatakse)  
   const [isGameOver, setIsGameOver] = useState(false);
   const handlePlayAgain = () => {
   };
@@ -436,8 +435,7 @@ const GamePage: React.FC = () => {
                 }}
               ></div>
             ))}
-          {/* Tingimuslik cups renderdamine */}
-          {showCups && (
+          {/*cups*/}
             <>
               {[
                 { top: "35%", left: "10%" }, // Vasakul
