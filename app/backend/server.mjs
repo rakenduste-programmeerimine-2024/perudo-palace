@@ -296,7 +296,7 @@ export function handleDiceRolls(diceArray){
 }
 
 // Vaatab kas mäng peaks läbi olema (ainult üks mängija on elus)
-export function checkGameOver() {
+export function checkGameOver(roomCode) {
   const activePlayers = rooms[roomCode].lives.filter(life => life > 0).length;
 
   if (activePlayers === 1) {
