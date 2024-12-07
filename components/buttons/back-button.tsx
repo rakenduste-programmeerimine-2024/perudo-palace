@@ -14,14 +14,16 @@ const BackButton: React.FC<BackButtonProps> = ({ href }) => {
       fixed bottom-8 left-8 
       flex items-center 
       space-x-2 
-      bg-orange-500 
-      text-white 
+      bg-gray-900 
+      text-orange-500  
       px-4 py-2 
       rounded-lg 
-      shadow-lg 
-      hover:bg-orange-600 transition"
+      border-2 
+      border-transparent 
+      hover:border-orange-500
+      transition"
     >
-      <ArrowBackIcon className="text-white" /> {/* Tagasi nool */}
+      <ArrowBackIcon className="text-orange-500" /> {/* Tagasi nool */}
       <span>Back</span> {/* Tekst */}
     </Link>
   );

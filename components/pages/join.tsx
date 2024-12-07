@@ -136,7 +136,7 @@ const Join: React.FC = () => {
         <SubmitButton
         formAction={handleJoinRoom}
         pendingText="Joining..."
-        className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
+        className="mt-4 bg-gray-900 text-orange-500 border-2 border-transparent hover:border-orange-500"
       >
         Join Game
       </SubmitButton>

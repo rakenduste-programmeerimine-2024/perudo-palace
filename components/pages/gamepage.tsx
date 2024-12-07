@@ -1,9 +1,11 @@
-"use client"
-
+"use client";
 import { useState, useEffect } from "react";
 import { Typography, IconButton, Button } from "@mui/material";
-import { io } from 'socket.io-client';
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import { io } from "socket.io-client";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
+import GameOverModal from "../GameOverModal"; // Veendu, et failitee oleks õige
 
 const socket = io("http://localhost:3030");
 
@@ -41,6 +43,8 @@ const cupPositionsMap = {
 }
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
+  const [isGameOver, setIsGameOver] = useState(false);
+  const handlePlayAgain = () => {};
   const [gameStarted, setGameStarted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,7 +67,6 @@ const GamePage: React.FC = () => {
       right: string;
       };}[]
    >([]);
-   const [gameOver, setGameOver] = useState(false)   
   //#region LISTENERS
 
   // starting
@@ -258,7 +261,7 @@ const GamePage: React.FC = () => {
       console.log("Displaying current bid: " + activeBid.diceAmount + " : " + activeBid.diceValue);
     });
     socket.on("game-over", () => {
-      setGameOver(true)
+      setIsGameOver(true)
     })
     return () => {
       socket.off("update-positions");
@@ -368,8 +371,26 @@ const GamePage: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gray-800 relative">
       {!gameStarted ? (
         <>
+          {/* Ootamisala, enne positsioonide valimist */}
+          <div className="absolute top-50 left-0 flex flex-col items-center space-y-4 bg-black bg-opacity-50 p-4 rounded-lg max-h-full">
+            {players
+              .filter((player) => !player.position)
+              .map((player) => (
+                <div key={player.id} className="flex flex-col items-center">
+                  <Player
+                    key={player.id}
+                    bgImage={player.bgImage}
+                    clickable={!gameStarted}
+                    name={""}
+                  />
+                  <span className="mt-2 text-white font-semibold">
+                    {player.name}
+                  </span>{" "}
+                </div>
+              ))}
+          </div>
           {/* Lobby vaade */}
-          <div className="relative w-[58rem] h-[28rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
+          <div className="relative w-[31rem] h-[15rem] bg-table2-bg bg-center bg-cover flex items-center justify-center">
             {["bottom", "right", "top", "left"].map((position) => {
               const playerInPosition = players.find(
                 (player) => player.position === position
@@ -421,9 +442,19 @@ const GamePage: React.FC = () => {
           </div>
 
           {/* Start Game ja Leave nupp */}
-          <div className="absolute bottom-[10rem] right-[5rem]">
+          <div className="absolute top-[1rem] left-[7rem]">
+            <div className="bg-gray-800 text-white p-4 rounded-lg shadow-lg w-full max-w-xs text-center">
+              <p className="font-semibold text-lg">
+                Room Code: <span className="font-bold">{roomCode}</span>
+              </p>
+            </div>
             {!isHost ? (
-              <p>Waiting for the host to start the game...</p>
+              <div className="bg-yellow-600 text-white p-4 rounded-md shadow-lg flex items-center space-x-3">
+                <span className="font-semibold">⏳</span>
+                <p className="text-lg font-semibold">
+                  Waiting for the host to start the game...
+                </p>
+              </div>
             ) : (
               <Button
                 variant="contained"
@@ -474,8 +505,8 @@ const GamePage: React.FC = () => {
                     className="absolute"
                     style={{
                       ...dicePositions[index],
-                      width: "3rem",
-                      height: "3rem",
+                      width: "2rem",
+                      height: "2rem",
                       backgroundImage: `url('${diceImage}')`,
                       backgroundSize: "contain",
                       backgroundRepeat: "no-repeat",
@@ -490,8 +521,8 @@ const GamePage: React.FC = () => {
                      className="absolute"
                      style={{
                         ...diceImage.position,
-                        width: "3rem",
-                        height: "3rem",
+                        width: "2rem",
+                        height: "2rem",
                         backgroundImage: `url('${diceImage.image}')`,
                         backgroundSize: "contain",
                         backgroundRepeat: "no-repeat",
@@ -538,45 +569,74 @@ const GamePage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Bid Number ja Dice Face Selector */}
+          <div
+            className="absolute top-[1rem] left-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
+            style={{ width: "200px", height: "150px" }} // Kohandatud laius ja kõrgus
+          >
+            <h1 className="text-xl font-bold mb-4">Current Bid</h1>
+            {/* Horisontaalne paigutus */}
+            <div className="flex items-center justify-center space-x-4">
+              {/* Bid Number */}
+                <div className="text-3xl font-bold">{diceNumber}</div>
+              </div>
+              {/* "X" ikoon */}
+              <div className="text-3xl font-bold">X</div>
+              {/* Dice koos nooltega */}
+              <div className="flex flex-col items-center">
+                <div
+                  className="w-16 h-16 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+                  }}
+                ></div>
+              </div>
+            </div>
+
 
           {/* Bid Number ja Dice Face Selector */}
           <div
-            className="absolute bottom-[2rem] right-[5rem] flex flex-col items-center space-y-4 bg-gray-800 text-white p-6 rounded-lg"
-            style={{ width: "240px", height: "350px" }} // Kindel laius ja kõrgus
+            className="absolute bottom-[2rem] right-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
+            style={{ width: "200px", height: "310px" }} // Kohandatud laius ja kõrgus
           >
-            <h1 className="text-2xl font-bold">Your Bid</h1>
-            <div className="flex items-center justify-center space-x-8">
-              {/* Bid Number Selector */}
+            <h1 className="text-xl font-bold mb-4">Your Bid</h1>
+            {/* Horisontaalne paigutus */}
+            <div className="flex items-center justify-center space-x-4">
+              {/* Bid Number koos nooltega */}
               <div className="flex flex-col items-center">
                 <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
                   onClick={increaseBid}
                 >
                   ↑
                 </button>
-                <div className="text-4xl font-bold text-center">
-                  {diceNumber}
-                </div>
+                <div className="text-3xl font-bold">{diceNumber}</div>
                 <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
                   onClick={decreaseBid}
                 >
                   ↓
                 </button>
               </div>
-              {/* Dice Face Selector */}
+              {/* "X" ikoon */}
+              <div className="text-3xl font-bold">X</div>
+              {/* Dice koos nooltega */}
               <div className="flex flex-col items-center">
                 <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
                   onClick={increaseDice}
                 >
                   ↑
                 </button>
-                <div className="text-4xl font-bold text-center">
-                  🎲 {diceValue}
-                </div>
+                <div
+                  className="w-16 h-16 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+                  }}
+                ></div>
                 <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600"
+                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
                   onClick={decreaseDice}
                 >
                   ↓
@@ -600,16 +660,17 @@ const GamePage: React.FC = () => {
               Place Bid
             </button>
           </div>
+
           {/* Sword ja Arrow nupud */}
-          <div className="absolute bottom-[7rem] left-[10rem] flex space-x-6 items-center">
+          <div className="absolute bottom-[2rem] left-[4rem] flex space-x-4 items-center">
             {/* Sword nupp ja tekst */}
             <div className="flex flex-col items-center">
               <IconButton
                 color="primary"
                 sx={{
-                  fontSize: 40,
-                  width: "150px", // määrab laiuse
-                  height: "150px", // määrab kõrguse
+                  fontSize: 26.7,
+                  width: "100px", // määrab laiuse
+                  height: "100px", // määrab kõrguse
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -636,9 +697,9 @@ const GamePage: React.FC = () => {
               <IconButton
                 color="primary"
                 sx={{
-                  fontSize: 40,
-                  width: "150px", // määrab laiuse
-                  height: "150px", // määrab kõrguse
+                  fontSize: 26.7,
+                  width: "100px", // määrab laiuse
+                  height: "100px", // määrab kõrguse
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -659,6 +720,19 @@ const GamePage: React.FC = () => {
                 Bullseye
               </span>
             </div>
+              {/* Läbipaistev endgame kast */}
+              {isGameOver && (
+              <div
+                className="fixed inset-0 flex flex-col items-center justify-center text-white p-6 bg-grey-700 bg-opacity-80"
+              >
+                {/* GameOverModal komponent */}
+                <GameOverModal
+                  onPlayAgain={handlePlayAgain}
+                  onLeaveRoom={handleLeaveRoom}
+                  winnerName="John Doe" // Näidis-võitja nimi
+                />
+              </div>
+              )}
           </div>
         </>
       )}
@@ -669,34 +743,37 @@ const GamePage: React.FC = () => {
 const getPositionClasses = (position: string) => {
   switch (position) {
     case "left":
-      return "absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-32";
+      return "absolute left-[3rem] top-1/2 transform -translate-y-1/2 -translate-x-32";
     case "top":
-      return "absolute top-[-1rem] left-1/2 transform -translate-x-1/2 -translate-y-32";
+      return "absolute top-[2rem] left-1/2 transform -translate-x-1/2 -translate-y-32";
     case "right":
-      return "absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-32";
+      return "absolute right-[3rem] top-1/2 transform -translate-y-1/2 translate-x-32";
     case "bottom":
-      return "absolute bottom-[-2rem] left-1/2 transform -translate-x-1/2 translate-y-32";
+      return "absolute bottom-[2rem] left-1/2 transform -translate-x-1/2 translate-y-32";
     default:
       return "";
   }
 };
 
 //Mängjate profiilid
-interface PlayerProps {
-  name: string;
-  bgImage: string;
-  hearts?: number;
-  clickable?: boolean;
-}
 
 const Player: React.FC<{
   name: string;
   bgImage: string;
-  hearts: number;
+  hearts?: number;
   clickable: boolean;
-  
-}> = ({ name, bgImage, clickable, hearts }) => {
+}> = ({ name, bgImage,hearts, clickable }) => {
   return (
+    <div
+    className={`flex flex-col items-center space-y-2 ${clickable ? "cursor-pointer" : ""}`}
+  >
+    {hearts && (
+      <div className="flex space-x-1">
+        {Array.from({ length: hearts }).map((_, index) => (
+          <FavoriteIcon key={index} className="text-red-800" />
+        ))}
+      </div>
+    )}
     <div
       className={`w-16 h-16 rounded-full border-4 ${
         clickable ? "cursor-pointer" : ""
@@ -714,7 +791,8 @@ const Player: React.FC<{
         {name}
       </Typography>
     </div>
+    </div>
   );
-};
+}
 
 export default GamePage;
