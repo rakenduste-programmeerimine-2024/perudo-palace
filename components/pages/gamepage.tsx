@@ -664,125 +664,8 @@ const GamePage: React.FC = () => {
                 ></div>
               </div>
             </div>
-
-
-          {/* Bid Number ja Dice Face Selector */}
-          <div
-            className="absolute bottom-[2rem] right-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
-            style={{ width: "200px", height: "310px" }} // Kohandatud laius ja kõrgus
-          >
-            <h1 className="text-xl font-bold mb-4">Your Bid</h1>
-            {/* Horisontaalne paigutus */}
-            <div className="flex items-center justify-center space-x-4">
-              {/* Bid Number koos nooltega */}
-              <div className="flex flex-col items-center">
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
-                  onClick={increaseBid}
-                >
-                  ↑
-                </button>
-                <div className="text-3xl font-bold">{diceAmount}</div>
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
-                  onClick={decreaseBid}
-                >
-                  ↓
-                </button>
-              </div>
-              {/* "X" ikoon */}
-              <div className="text-3xl font-bold">X</div>
-              {/* Dice koos nooltega */}
-              <div className="flex flex-col items-center">
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
-                  onClick={increaseDice}
-                >
-                  ↑
-                </button>
-                <div
-                  className="w-16 h-16 bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
-                  }}
-                ></div>
-                <button
-                  className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
-                  onClick={decreaseDice}
-                >
-                  ↓
-                </button>
-              </div>
-            </div>
-            {/* Place Bid nupp */}
-            <button 
-            className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold mt-6"
-            onClick={() => handlePlaceBid()}>
-              Place Bid
-            </button>
-          </div>
-            
-          {/* Sword ja Arrow nupud */}
-          <div className="absolute bottom-[2rem] left-[4rem] flex space-x-4 items-center">
-            {/* Sword nupp ja tekst */}
-            <div className="flex flex-col items-center">
-              <IconButton
-                color="primary"
-                sx={{
-                  fontSize: 26.7,
-                  width: "100px", // määrab laiuse
-                  height: "100px", // määrab kõrguse
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={() => handleBidCheck(false)}
-              >
-                <img
-                  src="/image/sword.png"
-                  alt="Sword"
-                  style={{
-                    width: "100%", // kohandab pildi suuruse nupu sees
-                    height: "100%",
-                    objectFit: "contain",
-                  }}
-                />
-              </IconButton>
-              <span className="text-white text-lg font-semibold mt-2">
-                Challenge
-              </span>
-            </div>
-
-            {/* Arrow nupp ja tekst */}
-            <div className="flex flex-col items-center">
-              <IconButton
-                color="primary"
-                sx={{
-                  fontSize: 26.7,
-                  width: "100px", // määrab laiuse
-                  height: "100px", // määrab kõrguse
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={() => handleBidCheck(true)}
-              >
-                <img
-                  src="/image/arrow.png"
-                  alt="Arrow"
-                  style={{
-                    width: "100%", // kohandab pildi suuruse nupu sees
-                    height: "100%",
-                    objectFit: "contain",
-                  }}
-                />
-              </IconButton>
-              <span className="text-white text-lg font-semibold mt-2">
-                Bullseye
-              </span>
-            </div>
-              {/* Läbipaistev endgame kast */}
-              {isGameOver && (
+            {/* Läbipaistev endgame kast */}
+            {isGameOver && (
               <div
                 className="fixed inset-0 flex flex-col items-center justify-center text-white p-6 bg-grey-700 bg-opacity-80"
               >
@@ -792,11 +675,136 @@ const GamePage: React.FC = () => {
                   onLeaveRoom={handleLeaveRoom}
                   winnerName={`${winner}`} //Võitja nimi
                 />
-              </div>
-              )}
-          </div>
+              </div>      
+            )}
+          {/* Bid Number ja Dice Face Selector */}
+          {
+            (players.find((player) => player.name === playerName)?.hearts ?? 0) > 0 && (
+               <>
+                  {/* Bid Number ja Dice Face Selector */}
+                  <div
+                  className="absolute bottom-[2rem] right-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
+                  style={{ width: "200px", height: "310px" }} // Kohandatud laius ja kõrgus
+                  >
+                  <h1 className="text-xl font-bold mb-4">Your Bid</h1>
+                  {/* Horisontaalne paigutus */}
+                  <div className="flex items-center justify-center space-x-4">
+                     {/* Bid Number koos nooltega */}
+                     <div className="flex flex-col items-center">
+                        <button
+                        className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
+                        onClick={increaseBid}
+                        >
+                        ↑
+                        </button>
+                        <div className="text-3xl font-bold">{diceAmount}</div>
+                        <button
+                        className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
+                        onClick={decreaseBid}
+                        >
+                        ↓
+                        </button>
+                     </div>
+                     {/* "X" ikoon */}
+                     <div className="text-3xl font-bold">X</div>
+                     {/* Dice koos nooltega */}
+                     <div className="flex flex-col items-center">
+                        <button
+                        className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mb-2"
+                        onClick={increaseDice}
+                        >
+                        ↑
+                        </button>
+                        <div
+                        className="w-16 h-16 bg-cover bg-center"
+                        style={{
+                           backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+                        }}
+                        ></div>
+                        <button
+                        className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
+                        onClick={decreaseDice}
+                        >
+                        ↓
+                        </button>
+                     </div>
+                  </div>
+                  {/* Place Bid nupp */}
+                  <button
+                     className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold mt-6"
+                     onClick={() => handlePlaceBid()}
+                  >
+                     Place Bid
+                  </button>
+                  </div>
+
+                  {/* Sword ja Arrow nupud */}
+                  <div className="absolute bottom-[2rem] left-[4rem] flex space-x-4 items-center">
+                  {/* Sword nupp ja tekst */}
+                  <div className="flex flex-col items-center">
+                     <IconButton
+                        color="primary"
+                        sx={{
+                        fontSize: 26.7,
+                        width: "100px", // määrab laiuse
+                        height: "100px", // määrab kõrguse
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        }}
+                        onClick={() => handleBidCheck(false)}
+                     >
+                        <img
+                        src="/image/sword.png"
+                        alt="Sword"
+                        style={{
+                           width: "100%", // kohandab pildi suuruse nupu sees
+                           height: "100%",
+                           objectFit: "contain",
+                        }}
+                        />
+                     </IconButton>
+                     <span className="text-white text-lg font-semibold mt-2">
+                        Challenge
+                     </span>
+                  </div>
+
+                  {/* Arrow nupp ja tekst */}
+                  <div className="flex flex-col items-center">
+                     <IconButton
+                        color="primary"
+                        sx={{
+                        fontSize: 26.7,
+                        width: "100px", // määrab laiuse
+                        height: "100px", // määrab kõrguse
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        }}
+                        onClick={() => handleBidCheck(true)}
+                     >
+                        <img
+                        src="/image/arrow.png"
+                        alt="Arrow"
+                        style={{
+                           width: "100%", // kohandab pildi suuruse nupu sees
+                           height: "100%",
+                           objectFit: "contain",
+                        }}
+                        />
+                     </IconButton>
+                     <span className="text-white text-lg font-semibold mt-2">
+                        Bullseye
+                     </span>
+                  </div>
+                  </div>
+               </>
+            )
+            
+            }
         </>
       )}
+      
     </div>
   );
 };
