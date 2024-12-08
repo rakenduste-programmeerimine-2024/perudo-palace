@@ -401,6 +401,7 @@ const GamePage: React.FC = () => {
     setPlayers(orderedPlayers); // Update players to reflect the playing order
     console.log("mängjiad prst start: " + players)
     setGameStarted(true);
+    setIsGameOver(false);
   };
 
   const handleLeaveRoom = () => {
