@@ -609,12 +609,37 @@ const GamePage: React.FC = () => {
                   name={player.name}
                   bgImage={player.bgImage}
                   hearts={3}
-                  clickable={true}
+                  clickable={false}
                   
                 />
               </div>
             ))}
           </div>
+
+          {/* Your Turn indikaator */}
+      {isTurn && (
+        <div className="absolute top-10 right-12 flex flex-col items-center">
+          {/* Tekst */}
+          <span className="text-white text-2xl font-bold mb-4">Your Turn</span>
+          {/* Roheline ring */}
+          <div
+            className="w-9 h-9 rounded-full"
+            style={{ backgroundColor: "green" }}
+          ></div>
+        </div>
+      )}
+        {/*its not Your Turn indikaator */}
+        {!isTurn && (
+        <div className="absolute top-10 right-12 flex flex-col items-center">
+          {/* Tekst */}
+          <span className="text-white text-2xl font-bold mb-4">Not Your Turn</span>
+          {/* punane ring */}
+          <div
+            className="w-9 h-9 rounded-full"
+            style={{ backgroundColor: "red" }}
+          ></div>
+        </div>
+      )}
           
           {/* Current bid box */}
           <div
