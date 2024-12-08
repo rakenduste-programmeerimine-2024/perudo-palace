@@ -443,7 +443,7 @@ const GamePage: React.FC = () => {
                     clickable={!gameStarted}
                     name={""}
                   />
-                  <span className="mt-2 text-white font-semibold">
+                  <span className="mt-2 text-black font-bold font-semibold">
                     {player.name}
                   </span>{" "}
                 </div>
@@ -617,6 +617,30 @@ const GamePage: React.FC = () => {
             ))}
           </div>
           
+              {/* Your Turn indikaator */}
+          {isTurn && (
+            <div className="absolute top-10 right-12 flex flex-col items-center">
+              {/* Tekst */}
+              <span className="text-white text-2xl font-bold mb-4">Your Turn</span>
+              {/* Roheline ring */}
+              <div
+                className="w-9 h-9 rounded-full"
+                style={{ backgroundColor: "green" }}
+              ></div>
+            </div>
+          )}
+            {/*its not Your Turn indikaator */}
+            {!isTurn && (
+            <div className="absolute top-10 right-12 flex flex-col items-center">
+              {/* Tekst */}
+              <span className="text-white text-2xl font-bold mb-4">Not Your Turn</span>
+              {/* punane ring */}
+              <div
+                className="w-9 h-9 rounded-full"
+                style={{ backgroundColor: "red" }}
+              ></div>
+            </div>
+          )}
           {/* Current bid box */}
           <div
             className="absolute top-[1rem] left-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
@@ -823,7 +847,7 @@ const Player: React.FC<{
     >
       <Typography
         variant="body2"
-        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 font-bold text-white text-shadow"
+        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 font-bold text-black font-bold text-shadow"
       >
         {name}
       </Typography>
