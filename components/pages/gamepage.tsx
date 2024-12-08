@@ -442,7 +442,7 @@ const GamePage: React.FC = () => {
                     clickable={!gameStarted}
                     name={""}
                   />
-                  <span className="mt-2 text-white font-semibold">
+                  <span className="mt-2 text-black font-bold font-semibold">
                     {player.name}
                   </span>{" "}
                 </div>
@@ -847,7 +847,7 @@ const Player: React.FC<{
     >
       <Typography
         variant="body2"
-        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 font-bold text-white text-shadow"
+        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 font-bold text-black font-bold text-shadow"
       >
         {name}
       </Typography>
