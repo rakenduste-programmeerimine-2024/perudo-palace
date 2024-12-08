@@ -187,8 +187,12 @@ io.on("connection", (socket) => {
     handleDiceCheck(response, roomCode);
 
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi see hetk
-
-    handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
+    setTimeout(() => {
+      io.to(roomCode).emit("hide-all-dices"); 
+    }, 5000); // peidab koikide diceid, 5 sekundi prst
+    setTimeout(() => {
+      handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
+    }, 5000);  
   });
 });
 
@@ -205,15 +209,13 @@ export function handleGameStart(roomCode) {
 }
 
 function handleNewGameSetup(roomCode){
+   
   //Kõikidele mängjatele täringute veeretamine
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice, rooms[roomCode].isActive);
   //Mängu alguse turni seadmine
   rooms[roomCode].turns = handleTurns(roomCode);
 
-  setTimeout(() => {
-  io.to(roomCode).emit("hide-all-dices"); 
-}, 5000); // peidab koikide diceid, 5 sekundi prst
-
+  
 //Paneb uued täringud
 io.to(roomCode).emit("generate-dice", 
    rooms[roomCode].dice, 
