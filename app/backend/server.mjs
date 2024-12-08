@@ -100,44 +100,6 @@ io.on("connection", (socket) => {
     delete rooms[roomCode];
     console.log("room " + roomCode + " deleted");
   });
-  
-  //-----------
-  //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
-  //-----------
-
-  socket.on("start-game", (roomCode) =>{
-    handleGameStart(roomCode);
-
-    io.to(roomCode).emit("start-game");
-    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
-
-    // dice generating
-    const randomDiceAmounts = [];
-    for (let j = 0; j < 4; j++) {
-      randomDiceAmounts.push(Math.floor(Math.random() * 6) + 1);
-    }
-    if (rooms[roomCode].length <= rooms[roomCode].players.length) { rooms[roomCode].dice.push(randomDiceAmounts); }
-    console.log(rooms[roomCode].dice);
-    io.to(roomCode).emit("generate-dice", rooms[roomCode].dice);
-
-    //dice displaying
-    for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
-      console.log("playernumber:" + playerNumber)
-      io.to(roomCode).emit("display-player-dice", playerNumber, rooms[roomCode].players[playerNumber], rooms[roomCode].dice, rooms[roomCode].positions['position' + (playerNumber + 1)]); // naitab ainult playeri dice
-    }
-
-    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi
-    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
-  });
-
-  socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
-    console.log("Placed new bid!")
-
-    handleDiceBidSubmit(roomCode, diceAmount, diceValue);
-
-    io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
-    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
-  });
 
   socket.on("position-picked", ({ playerName, position, roomCode }) => {
     const room = rooms[roomCode];
@@ -168,6 +130,55 @@ io.on("connection", (socket) => {
     // saada positsioonid lobby'sse
     io.to(roomCode).emit("update-positions", room.positions);
   });
+  //-----------
+  //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
+  //-----------
+
+  socket.on("start-game", (roomCode) =>{
+    handleGameStart(roomCode);
+
+    io.to(roomCode).emit("start-game");
+    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
+
+    // dice generating
+    const randomDiceAmounts = [];
+    for (let j = 0; j < 4; j++) {
+      randomDiceAmounts.push(Math.floor(Math.random() * 6) + 1);
+    }
+    console.log("Mängjate array dice's", rooms[roomCode].players)
+    if (rooms[roomCode].length <= rooms[roomCode].players.length) { rooms[roomCode].dice.push(randomDiceAmounts); }
+    console.log(rooms[roomCode].dice);
+    io.to(roomCode).emit("generate-dice", 
+      rooms[roomCode].dice, 
+      rooms[roomCode].players, 
+      rooms[roomCode].positions
+   );
+
+    //dice displaying
+    for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
+      console.log("playernumber:" + playerNumber)
+      io.to(roomCode).emit("display-player-dice", 
+         playerNumber, 
+         rooms[roomCode].players[playerNumber], 
+         rooms[roomCode].dice, 
+         rooms[roomCode].positions['position' + (playerNumber + 1)
+         ]); // naitab ainult playeri dice
+    }
+
+    io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
+  });
+
+  socket.on("placed-bid", ({ roomCode, diceAmount, diceValue }) => {
+    console.log("Placed new bid!")
+
+    handleDiceBidSubmit(roomCode, diceAmount, diceValue);
+
+    io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
+    io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
+  });
+
+  
 
   socket.on("check-bid", ({ response, roomCode }) => {
     io.to(roomCode).emit("display-all-dices"); // naitab koikide inimeste taringuid
@@ -175,7 +186,6 @@ io.on("connection", (socket) => {
     handleDiceCheck(response, roomCode);
 
     io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players); // naitab koikide inimeste elusi see hetk
-    io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
 
     handleNewGameSetup(roomCode); // veeretab uuesti taringud ja muudab turni
   });
@@ -197,6 +207,11 @@ function handleNewGameSetup(roomCode){
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
   //Mängu alguse turni seadmine
   rooms[roomCode].turns = handleTurns(roomCode);
+
+  setTimeout(() => {
+  io.to(roomCode).emit("hide-all-dices"); 
+}, 5000); // peidab koikide diceid, 5 sekundi prst
+  io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players);
 }
 
 //Muudab kelle turn on olenevat sellest kelle turn prg on
@@ -247,22 +262,34 @@ export function handleDiceCheck(response, roomCode){
  if(diceCounter == rooms[roomCode].activeBid.diceAmount){
   if (response === false){
      rooms[roomCode].lives[checkerPlayer]--;
-     if(rooms[roomCode].lives[checkerPlayer] == 0){handlePlayerDeath(roomCode, checkerPlayer)}
+     if(rooms[roomCode].lives[checkerPlayer] == 0) {
+      handlePlayerDeath(roomCode, checkerPlayer)
+      io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players)
+   }
   }
   else{
      rooms[roomCode].lives[lastBidder]--;
-     if(rooms[roomCode].lives[lastBidder] == 0){handlePlayerDeath(roomCode, lastBidder)}
+     if(rooms[roomCode].lives[lastBidder] == 0) {
+      handlePlayerDeath(roomCode, lastBidder)
+      io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players)
+   }
   }
  }
  //Kui ei ühti
  else{
   if (response === false){
      rooms[roomCode].lives[lastBidder]--;
-     if(rooms[roomCode].lives[lastBidder] == 0) { handlePlayerDeath(roomCode, lastBidder) }
+     if(rooms[roomCode].lives[lastBidder] == 0) { 
+      handlePlayerDeath(roomCode, lastBidder)
+      io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players)
+    }
   }
   else{
      rooms[roomCode].lives[checkerPlayer]--;
-     if(rooms[roomCode].lives[checkerPlayer] == 0) { handlePlayerDeath(roomCode, checkerPlayer) }
+     if(rooms[roomCode].lives[checkerPlayer] == 0) { 
+      handlePlayerDeath(roomCode, checkerPlayer)
+      io.to(roomCode).emit("display-hearts", rooms[roomCode].lives, rooms[roomCode].players)
+    }
   }
  }
 }
@@ -270,7 +297,7 @@ export function handleDiceCheck(response, roomCode){
 //Mängjia paneb enda käigu ajal mitu, 
 //missugust täringut on laual kokku tema arust. 
 //Need params väärtused tuleksid frontendist kust seda Bidi submititakse
-export function handleDiceBidSubmit(roomCode, diceValue, diceAmount) {
+export function handleDiceBidSubmit(roomCode, diceAmount, diceValue ) {
   for (let i = 0; i < rooms[roomCode].turns.length; i++) {
      if(rooms[roomCode].turns[i] === true){
         rooms[roomCode].activeBid.playerIndex = i;
@@ -307,7 +334,7 @@ export function checkGameOver(roomCode) {
 
 //Kui mängjal on elud 0 siis võtame ta mängu loogikast välja 
 export function handlePlayerDeath(roomCode, i){
-  console.log("Player" + rooms[roomCode].players[i] + " has been eliminated.");
+  console.log("Player: " + rooms[roomCode].players[i] + " has been eliminated.");
 
   rooms[roomCode].turns.splice(i, 1);
   rooms[roomCode].dice.splice(i, 1);

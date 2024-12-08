@@ -51,11 +51,13 @@ const GamePage: React.FC = () => {
   const roomCode = searchParams.get("roomCode");
   const playerName = searchParams.get("playerName");
   const [isHost, setIsHost] = useState(false);
-  const [players, setPlayers] = useState<{ id: number; name: string; bgImage: string; position: string }[]>([]);
-  const [diceNumber, setDiceNumber] = useState(1); // Number 1-16
+  const [players, setPlayers] = useState<{ id: number; name: string; bgImage: string; position: string; hearts:number }[]>([]);
+  const [diceAmount, setDiceNumber] = useState(1); // Number 1-16
   const [diceValue, setDiceValue] = useState(1); // Dice face 1-6
   const [isTurn, setIsTurn] = useState(false);
-  const [randomDiceImages, setRandomDiceImages] = useState<string[]>([]); // Hoia täringute pildid seisundis
+  const [allDiceImages, setAllDiceImages] = useState<
+  { image: string; position: { bottom?: string; left?: string; top?: string; right?: string } }[]
+   >([]); // Hoia täringute pildid seisundis
   const [playerDiceImages, setPlayerDiceImages] = useState<
   { image: string; position: { bottom?: string; left?: string; top?: string; right?: string } }[]
    >([]);
@@ -67,6 +69,8 @@ const GamePage: React.FC = () => {
       right: string;
       };}[]
    >([]);
+   const [activeBidAmount, setActiveBidAmount] = useState(0);
+   const [activeBidValue, setActiveBidValue] = useState(1);
   //#region LISTENERS
 
   // starting
@@ -105,6 +109,7 @@ const GamePage: React.FC = () => {
         name,
         bgImage: `/image/smile/smile${(index % 6) + 1}.jpg`, // Prgu käi lihtsalt pildid läbi
         position: "", // Algselt pole kellelgil positsiooni
+        hearts:3,
       }
     ));
 
@@ -141,35 +146,77 @@ const GamePage: React.FC = () => {
         })
       );
     });
-
-    socket.on("generate-dice", (dice) => {
+    
+    //Kõikide täringud
+    socket.on("generate-dice", (dice, playersNames, playersPositions) => {
+      console.log("Received playersNames:", playersNames); // Verify it's an array
+      console.log("Received dice:", dice);  // Verify dice data
+      console.log("Received playersPositions:", playersPositions); // Verify positions data
       if (hasDice) { return; }
-      setHasDice(true);
+      //Minu arust seda ei ole üldse vaja
+      //setHasDice(true);
+      const namesArray = playersNames
+      const positionMap: {
+         "bottom": [number, number];
+         "left": [number, number];
+         "top": [number, number];
+         "right": [number, number];
+       } = {
+         "bottom": [0, 4],
+         "left": [4, 8],
+         "top": [8, 12],
+         "right": [12, 16],
+       };
+       for (let i = 0; i < namesArray.length; i++) {
+         console.log("suutsin lugeda length, kuna esimene oli tühi playersNames")
+         const playerPosition = playersPositions[`position${i + 1}`]; // Get the position for each player (position1, position2, etc.)
+         const playerDice = dice[i]; // Get the player's dice
+         
+         // Skip if no dice or position available
+         if (!playerDice || !playerPosition) {
+           continue;
+         }
+         
+         // Get the correct range from positionMap based on player position (bottom, left, top, right)
+         const [start, end] = positionMap[playerPosition as "bottom" | "left" | "top" | "right"] || [0, 4];
+     
+         // Generate dice images with their positions
+         const diceImagesWithPositions = dicePositions.slice(start, end).map((position, index) => {
+           const diceNumber = playerDice[index]; // Get the dice number for this player
+           return {
+             image: `/image/w_dice/dice${diceNumber}.png`,
+             position,
+           };
+         });
+     
+         // Save the dice positions in the state (for example, playerDiceImages)
+         setAllDiceImages(prevImages => [
+           ...prevImages,
+           ...diceImagesWithPositions, // Add new dice with positions to the state
+         ]);
+       }
+      // const diceImages = dicePositions.filter((_, index) => index < dice.length * 4).map(() => {
+      //   const diceNumber = dice[arrayValue][diceValue]; // Vahemik 1-6
 
-      let arrayValue = 0;
-      let diceValue = 0;
+      //   diceValue++;
+      //   if (diceValue > 3) {diceValue = 0; arrayValue++; }
 
-      const diceImages = dicePositions.filter((_, index) => index < dice.length * 4).map(() => {
-        const diceNumber = dice[arrayValue][diceValue]; // Vahemik 1-6
+      //   return `/image/w_dice/dice${diceNumber}.png`;
+      // });
 
-        diceValue++;
-        if (diceValue > 3) {diceValue = 0; arrayValue++; }
-
-        return `/image/w_dice/dice${diceNumber}.png`;
-      });
-
-      console.log("All dice: " + diceImages);
-      setRandomDiceImages(diceImages);
+      // console.log("All dice: " + diceImages);
+      // setAllDiceImages(diceImages);
     });
 
+    //Iga mängija eraldi täringud
     socket.on("display-player-dice", (playerNumber, userName, dice, position) =>{
       if (userName !== playerName) { return; }
 
-      console.log("Player pos: ",  position);
+      //console.log("Player pos: ",  position);
 
       //leiab õige mängja positsiooni lauas ja selle järgi paneme ka täringud
       const playerPosition = position;
-      console.log("antud positsioon:" + position)
+      //console.log("antud positsioon:" + position)
       if (!playerPosition || !["bottom", "left", "top", "right"].includes(playerPosition)) {
         console.error("Invalid player position:", playerPosition);
       }
@@ -210,7 +257,7 @@ const GamePage: React.FC = () => {
         },
       }));
 
-      console.log("cuppide kordinaadid?: ",filteredCupPositions)
+      //console.log("cuppide kordinaadid?: ",filteredCupPositions)
       //salvestab kordinaadid, et neid saaks lehel kasutada
       setCupPositions(filteredCupPositions);
       setPlayerDiceImages(diceImagesWithPositions);
@@ -228,13 +275,22 @@ const GamePage: React.FC = () => {
       setDisplayingDice(true);
     });
 
-    socket.on("display-hearts", (lives, players) => {
+    socket.on("display-hearts", (lives, playerNames) => {
       for (let i = 0; i < lives.length; i++) {
         const lifeIndicator = lives[i];
-        const playerName = players[i];
+        const playerName = playerNames[i];
 
         console.log("Player " + playerName + " has " + lifeIndicator + " lives left!")
       }
+      setPlayers((prevPlayers) =>
+         prevPlayers.map((player) => {
+           const playerIndex = playerNames.indexOf(playerName);
+           return playerIndex !== -1
+             ? { ...player, hearts: lives[playerIndex] }
+             : player;
+         })
+       );
+      
     });
 
     socket.on("display-turn", (turns, names) => {
@@ -252,13 +308,15 @@ const GamePage: React.FC = () => {
         else{
           setIsTurn(false);
           console.log("Not your turn!");
-          alert("Not your turn!");
+          //alert("Not your turn!");
         }
       }
     });
-
-    socket.on("display-current-bid", (activeBid) => {
-      console.log("Displaying current bid: " + activeBid.diceAmount + " : " + activeBid.diceValue);
+    //Panem kõikidele mängjatele uue bidi
+    socket.on("display-current-bid", (newBid) => {
+      console.log("Displaying current bid: " + newBid.diceAmount + " : " + newBid.diceValue);
+      setActiveBidAmount(newBid.diceAmount)
+      setActiveBidValue(newBid.diceValue)
     });
     socket.on("game-over", () => {
       setIsGameOver(true)
@@ -282,10 +340,10 @@ const GamePage: React.FC = () => {
   //#region FUNCTIONS
 
   const increaseBid = () => {
-    if (diceNumber < 16) setDiceNumber(diceNumber + 1);
+    if (diceAmount < 16) setDiceNumber(diceAmount + 1);
   };
   const decreaseBid = () => {
-    if (diceNumber > 1) setDiceNumber(diceNumber - 1);
+    if (diceAmount > 1) setDiceNumber(diceAmount - 1);
   };
   const increaseDice = () => {
     if (diceValue < 6) setDiceValue(diceValue + 1);
@@ -354,14 +412,15 @@ const GamePage: React.FC = () => {
     if (!isTurn) { return; }
 
     console.log("Placing bid...");
-    console.log(`Dice Amount: ${diceNumber}, Dice Value: ${diceValue}`);
-    socket.emit("placed-bid", { roomCode, bidNumber: diceNumber, diceValue });
+    console.log(`Dice Amount: ${diceAmount}, Dice Value: ${diceValue}`);
+    socket.emit("placed-bid", { roomCode, diceAmount: diceAmount, diceValue: diceValue });
   };
 
   const handleBidCheck = (response: boolean) => {
     if (isTurn){
       console.log("Challenging bid...");
       socket.emit("check-bid", { response, roomCode });
+      setHasDice(false)
     }
   };
   
@@ -409,8 +468,9 @@ const GamePage: React.FC = () => {
                     <Player
                       name={playerInPosition.name}
                       bgImage={playerInPosition.bgImage}
+                      hearts={playerInPosition.hearts}
                       clickable={!gameStarted}
-                      hearts={3}
+
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
@@ -425,20 +485,6 @@ const GamePage: React.FC = () => {
                 </div>
               );
             })}
-            {/* Ootamisala, enne positsioonide valimist */}
-            <div className="absolute top-0 left-0 flex flex-col items-center space-y-4">
-              {players
-                .filter((player) => !player.position)
-                .map((player) => (
-                  <Player
-                    key={player.id}
-                    name={player.name}
-                    bgImage={player.bgImage}
-                    clickable={!gameStarted}
-                    hearts={3}
-                  />
-                ))}
-            </div>
           </div>
 
           {/* Start Game ja Leave nupp */}
@@ -499,15 +545,15 @@ const GamePage: React.FC = () => {
             {/*dices*/}
             {isDisplayingDice ? (
               <>
-                {randomDiceImages.map((diceImage, index) => (
+                {allDiceImages.map((diceInfo, index) => (
                   <div
                     key={index}
                     className="absolute"
                     style={{
-                      ...dicePositions[index],
+                      ...diceInfo.position,
                       width: "2rem",
                       height: "2rem",
-                      backgroundImage: `url('${diceImage}')`,
+                      backgroundImage: `url('${diceInfo.image}')`,
                       backgroundSize: "contain",
                       backgroundRepeat: "no-repeat",
                   }}/>
@@ -570,7 +616,7 @@ const GamePage: React.FC = () => {
             ))}
           </div>
           
-          {/* Bid Number ja Dice Face Selector */}
+          {/* Current bid box */}
           <div
             className="absolute top-[1rem] left-[2rem] flex flex-col items-center bg-grey-900 text-white p-6 rounded-lg"
             style={{ width: "200px", height: "150px" }} // Kohandatud laius ja kõrgus
@@ -579,7 +625,7 @@ const GamePage: React.FC = () => {
             {/* Horisontaalne paigutus */}
             <div className="flex items-center justify-center space-x-4">
               {/* Bid Number */}
-                <div className="text-3xl font-bold">{diceNumber}</div>
+                <div className="text-3xl font-bold">{activeBidAmount}</div>
               </div>
               {/* "X" ikoon */}
               <div className="text-3xl font-bold">X</div>
@@ -588,7 +634,7 @@ const GamePage: React.FC = () => {
                 <div
                   className="w-16 h-16 bg-cover bg-center"
                   style={{
-                    backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
+                    backgroundImage: `url('/image/dice/dice${activeBidValue}.png')`,
                   }}
                 ></div>
               </div>
@@ -611,7 +657,7 @@ const GamePage: React.FC = () => {
                 >
                   ↑
                 </button>
-                <div className="text-3xl font-bold">{diceNumber}</div>
+                <div className="text-3xl font-bold">{diceAmount}</div>
                 <button
                   className="text-lg font-bold bg-gray-700 p-2 rounded hover:bg-gray-600 mt-2"
                   onClick={decreaseBid}
@@ -643,24 +689,14 @@ const GamePage: React.FC = () => {
                 </button>
               </div>
             </div>
-            {/* Dice Image Section */}
-            <div className="mt-4 flex items-center justify-center space-x-4">
-              <div className="text-4xl font-bold">{diceNumber}</div>
-              <div className="text-4xl font-bold">X</div>
-              <div
-                className="w-16 h-16 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('/image/dice/dice${diceValue}.png')`,
-                }}
-              ></div>
-            </div>
+            {/* Place Bid nupp */}
             <button 
-              className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold"
-              onClick={() => handlePlaceBid()}>
+            className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 font-bold mt-6"
+            onClick={() => handlePlaceBid()}>
               Place Bid
             </button>
           </div>
-
+            
           {/* Sword ja Arrow nupud */}
           <div className="absolute bottom-[2rem] left-[4rem] flex space-x-4 items-center">
             {/* Sword nupp ja tekst */}
@@ -762,7 +798,7 @@ const Player: React.FC<{
   bgImage: string;
   hearts?: number;
   clickable: boolean;
-}> = ({ name, bgImage,hearts, clickable }) => {
+}> = ({ name, bgImage, hearts, clickable }) => {
   return (
     <div
     className={`flex flex-col items-center space-y-2 ${clickable ? "cursor-pointer" : ""}`}
