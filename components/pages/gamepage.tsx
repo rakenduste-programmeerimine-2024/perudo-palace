@@ -432,7 +432,7 @@ const GamePage: React.FC = () => {
       {!gameStarted ? (
         <>
           {/* Ootamisala, enne positsioonide valimist */}
-          <div className="absolute top-50 left-0 flex flex-col items-center space-y-4 bg-black bg-opacity-50 p-4 rounded-lg max-h-full">
+          <div className="absolute top-50 left-0 flex flex-col items-center space-y-4 bg-yellow-600 bg-opacity-100 p-4 rounded-lg max-h-full">
             {players
               .filter((player) => !player.position)
               .map((player) => (
