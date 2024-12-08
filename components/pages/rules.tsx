@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Lisatud ikoon MUI-st
+import BackButton from "@/components/buttons/back-button";
 
 const Rules: React.FC = () => {
   return (
@@ -135,15 +136,8 @@ const Rules: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Back nupp */}
-      <Link
-        href="/"
-        className="fixed bottom-8 left-8 flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-orange-600 transition"
-      >
-        <ArrowBackIcon className="text-white" />
-        <span>Back</span>
-      </Link>
+      {/* Tagasi nupp */}
+      <BackButton href="/" />
     </div>
   );
 };

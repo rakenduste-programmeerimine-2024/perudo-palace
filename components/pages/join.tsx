@@ -20,6 +20,11 @@ const Join: React.FC = () => {
   const [socketId, setSocketId] = useState<string>("");
 
   useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to socket server, socket ID:", socket.id);
+      setSocketId(socket.id as string);
+    }); // EI TOOTA
+
     socket.on("room-error", (message) => {
       setError(message);
     });
@@ -39,9 +44,11 @@ const Join: React.FC = () => {
       setError("Enter both your name and the room code.");
       return;
     }
+    
+    console.log("id: " + socketId + " og: " + socket.id);
 
     setError("");
-    socket.emit("join-room", roomCode, playerName);
+    socket.emit("join-room", roomCode, playerName, socket.id);
 
     // addToDB();
   };
@@ -129,7 +136,7 @@ const Join: React.FC = () => {
         <SubmitButton
         formAction={handleJoinRoom}
         pendingText="Joining..."
-        className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
+        className="mt-4 bg-gray-900 text-orange-500 border-2 border-transparent hover:border-orange-500"
       >
         Join Game
       </SubmitButton>

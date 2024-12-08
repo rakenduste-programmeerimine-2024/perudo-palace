@@ -1,10 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"node app/backend/server.js\"",
+    "dev": "concurrently \"next dev\" \"node app/backend/server.mjs\"",
     "build": "next build",
     "start": "next start",
-    "start-socket-server": "node app/backend/server.js"
+    "start-socket-server": "node app/backend/server.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",

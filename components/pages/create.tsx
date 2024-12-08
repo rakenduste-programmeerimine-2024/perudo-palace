@@ -18,12 +18,12 @@ const Create: React.FC = () => {
   const router = useRouter();
   const supabase = createClient();
   const [socketId, setSocketId] = useState<string>("");
-
+  
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Connected to socket server, socket ID:", socket.id);
       setSocketId(socket.id as string);
-    });
+    }); // EI TOOTA
 
     socket.on("room-error", (message) => {
       setError(message);
@@ -47,7 +47,10 @@ const Create: React.FC = () => {
     }
 
     setError("");
-    socket.emit("create-room", roomCode, hostName);
+
+    console.log("id: " + socketId + " og: " + socket.id);
+
+    socket.emit("create-room", roomCode, hostName, socket.id);
 
     // addToDB();
   };
@@ -146,8 +149,8 @@ const Create: React.FC = () => {
         <SubmitButton
           formAction={handleCreateRoom}
           pendingText="creating..."
-          className="mt-4 bg-orange-500 text-white hover:bg-orange-600"
-        >
+          className="mt-4 bg-gray-900 text-orange-500 border-2 border-transparent hover:border-orange-500"
+          >
         Create Game
         </SubmitButton>
       </form>
