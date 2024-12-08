@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
         turns: null, 
         dice: null, 
         lives: null, 
+        isActive: null,
         activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
         positions: {
           position1: null,
@@ -198,58 +199,92 @@ export function handleGameStart(roomCode) {
   rooms[roomCode].turns = Array(rooms[roomCode].players.length).fill(false);
   rooms[roomCode].dice = Array(rooms[roomCode].players.length).fill(null).map(() => Array(4).fill(1));
   rooms[roomCode].lives = Array(rooms[roomCode].players.length).fill(3);
+  rooms[roomCode].isActive = Array(rooms[roomCode].players.length).fill(true);
 
   handleNewGameSetup(roomCode);
 }
 
 function handleNewGameSetup(roomCode){
   //Kõikidele mängjatele täringute veeretamine
-  rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice);
+  rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice, rooms[roomCode].isActive);
   //Mängu alguse turni seadmine
   rooms[roomCode].turns = handleTurns(roomCode);
 
   setTimeout(() => {
   io.to(roomCode).emit("hide-all-dices"); 
 }, 5000); // peidab koikide diceid, 5 sekundi prst
+
+//Paneb uued täringud
+io.to(roomCode).emit("generate-dice", 
+   rooms[roomCode].dice, 
+   rooms[roomCode].players, 
+   rooms[roomCode].positions
+);
+
+ //dice displaying
+ for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
+   console.log("playernumber:" + playerNumber)
+   io.to(roomCode).emit("display-player-dice", 
+      playerNumber, 
+      rooms[roomCode].players[playerNumber], 
+      rooms[roomCode].dice, 
+      rooms[roomCode].positions['position' + (playerNumber + 1)
+      ]); // naitab ainult playeri dice
+ } 
   io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players);
 }
 
 //Muudab kelle turn on olenevat sellest kelle turn prg on
 export function handleTurns(roomCode) {
-  const turnArray = rooms[roomCode].turns;
-
-  for (let i = 0; i < turnArray.length; i++) {
-     // Mängu algus: paned 1. mängja käigu trueks
+   const turnArray = rooms[roomCode].turns;
+   const isActiveArray = rooms[roomCode].isActive;
+ 
+   for (let i = 0; i < turnArray.length; i++) {
+     // Mängu algus: pane 1. aktiivse mängija käik trueks
      if (!turnArray.includes(true)) {
-        turnArray[0] = true;
-        return turnArray;
+       const firstActiveIndex = isActiveArray.findIndex((active) => active);
+       if (firstActiveIndex !== -1) {
+         turnArray[firstActiveIndex] = true;
+         return turnArray;
+       }
+       // Kui pole aktiivseid mängijaid (äärmuslik juhtum)
+       console.error("No active players left in the game.");
+       return turnArray;
      }
-
-     // Otsin mängjate kelle turn on prg
+ 
+     // Leia mängija, kelle turn on praegu
      if (turnArray[i] === true) {
-        turnArray[i] = false;
-        // Panen turni järgmisele mängjale
-        if (i + 1 < turnArray.length) {
-           turnArray[i + 1] = true;
-        } else {
-           // Kui mängija on arrays viimane paned essa mängja turni trueks
-           turnArray[0] = true;
-        }
-        break;
+       turnArray[i] = false;
+       let nextIndex = (i + 1) % turnArray.length;
+ 
+       // Leia järgmine aktiivne mängija
+       while (!isActiveArray[nextIndex]) {
+         nextIndex = (nextIndex + 1) % turnArray.length;
+ 
+         // Äärmuslik juhtum: kui kõik mängijad on mitteaktiivsed
+         if (nextIndex === i) {
+           console.error("No active players available for the next turn.");
+           return turnArray;
+         }
+       }
+ 
+       turnArray[nextIndex] = true;
+       break;
      }
-  }
-  return turnArray;
-}
+   }
+   return turnArray;
+ }
 
 //Kui mängija otsustab callida bluffi tõeseks või valeks, 
 //kontrollib üle kõik täringud, et kas see ühtib bluffiga
 export function handleDiceCheck(response, roomCode){
   let diceCounter = 0;
+  console.log("vastus bidile: ", response)
   //Käib läbi kõik täringud ja loetab, mitu kindlat täringut on
   for (let i = 0; i < rooms[roomCode].dice.length; i++) {
      for (let j = 0; j < rooms[roomCode].dice[i].length; j++) {
         if(rooms[roomCode].dice[i][j] == rooms[roomCode].activeBid.diceValue){
-           diceCounter++
+           diceCounter++;
         }
      }
  }
@@ -292,6 +327,11 @@ export function handleDiceCheck(response, roomCode){
     }
   }
  }
+
+ //resettib bidi
+ rooms[roomCode].activeBid.diceAmount = 0
+ rooms[roomCode].activeBid.diceValue = 0
+ io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
 }
 
 //Mängjia paneb enda käigu ajal mitu, 
@@ -313,22 +353,32 @@ export function handleDiceBidSubmit(roomCode, diceAmount, diceValue ) {
 
 //Veeretab mängu alguses, 
 //või kui round saab lõbi igale mängjale täringud.
-export function handleDiceRolls(diceArray){
-  for (let i = 0; i < diceArray.length; i++) {
-     for (let j = 0; j < diceArray[i].length; j++) {
+export function handleDiceRolls(diceArray, isActive) {
+   for (let i = 0; i < diceArray.length; i++) {
+     // Kui mängjia on inactive ta täringud on 0, seega ei mõjuta mängu
+     if (!isActive[i]) {
+       for (let j = 0; j < diceArray[i].length; j++) {
+         diceArray[i][j] = 0; 
+       }
+     } else {
+       // If the player is active, roll the dice normally
+       for (let j = 0; j < diceArray[i].length; j++) {
          diceArray[i][j] = Math.floor(Math.random() * 6) + 1;
+       }
      }
+   }
+   return diceArray;
  }
- return diceArray;
-}
 
 // Vaatab kas mäng peaks läbi olema (ainult üks mängija on elus)
 export function checkGameOver(roomCode) {
   const activePlayers = rooms[roomCode].lives.filter(life => life > 0).length;
-
+   
   if (activePlayers === 1) {
      console.log("Game Over!");
-     io.to(roomCode).emit("game-over")
+     const winnerIndex = rooms[roomCode].isActive.findIndex(isActive => isActive === true);
+     const winner = rooms[roomCode].players[winnerIndex]
+     io.to(roomCode).emit("game-over", winner)
   }
 }
 
@@ -336,9 +386,8 @@ export function checkGameOver(roomCode) {
 export function handlePlayerDeath(roomCode, i){
   console.log("Player: " + rooms[roomCode].players[i] + " has been eliminated.");
 
-  rooms[roomCode].turns.splice(i, 1);
-  rooms[roomCode].dice.splice(i, 1);
-  rooms[roomCode].lives.splice(i, 1);
+  rooms[roomCode].isActive[i] = false
+  rooms[roomCode].turns[i] = false
 
   checkGameOver(roomCode);
 }

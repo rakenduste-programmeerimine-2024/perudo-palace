@@ -44,7 +44,6 @@ const cupPositionsMap = {
 //Bettimise UI jaoks ja mängu alustamise nuppu loogika
 const GamePage: React.FC = () => {
   const [isGameOver, setIsGameOver] = useState(false);
-  const handlePlayAgain = () => {};
   const [gameStarted, setGameStarted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,6 +70,7 @@ const GamePage: React.FC = () => {
    >([]);
    const [activeBidAmount, setActiveBidAmount] = useState(0);
    const [activeBidValue, setActiveBidValue] = useState(1);
+   const [winner, setWinner] = useState("");
   //#region LISTENERS
 
   // starting
@@ -284,12 +284,12 @@ const GamePage: React.FC = () => {
       }
       setPlayers((prevPlayers) =>
          prevPlayers.map((player) => {
-           const playerIndex = playerNames.indexOf(playerName);
+           const playerIndex = playerNames.indexOf(player.name); // Use the player's name to find the correct index
            return playerIndex !== -1
-             ? { ...player, hearts: lives[playerIndex] }
+             ? { ...player, hearts: lives[playerIndex] } // Update hearts based on the correct index
              : player;
          })
-       );
+      );
       
     });
 
@@ -302,7 +302,7 @@ const GamePage: React.FC = () => {
         if (turnIndicator && userName == playerName){
           setIsTurn (true);
           console.log("Your turn!");
-          alert("Your turn!");
+          //alert("Your turn!");
           break;
         }
         else{
@@ -318,7 +318,8 @@ const GamePage: React.FC = () => {
       setActiveBidAmount(newBid.diceAmount)
       setActiveBidValue(newBid.diceValue)
     });
-    socket.on("game-over", () => {
+    socket.on("game-over", (winner) => {
+      setWinner(winner)
       setIsGameOver(true)
     })
     return () => {
@@ -608,8 +609,8 @@ const GamePage: React.FC = () => {
                 <Player
                   name={player.name}
                   bgImage={player.bgImage}
-                  hearts={3}
-                  clickable={true}
+                  hearts={player.hearts}
+                  clickable={false}
                   
                 />
               </div>
@@ -711,7 +712,7 @@ const GamePage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
-                onClick={() => handleBidCheck(true)}
+                onClick={() => handleBidCheck(false)}
               >
                 <img
                   src="/image/sword.png"
@@ -740,7 +741,7 @@ const GamePage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
-                onClick={() => handleBidCheck(false)}
+                onClick={() => handleBidCheck(true)}
               >
                 <img
                   src="/image/arrow.png"
@@ -763,9 +764,9 @@ const GamePage: React.FC = () => {
               >
                 {/* GameOverModal komponent */}
                 <GameOverModal
-                  onPlayAgain={handlePlayAgain}
+                  onPlayAgain={handleStartGame}
                   onLeaveRoom={handleLeaveRoom}
-                  winnerName="John Doe" // Näidis-võitja nimi
+                  winnerName={`${winner}`} //Võitja nimi
                 />
               </div>
               )}
