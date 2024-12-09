@@ -35,6 +35,7 @@ io.on("connection", (socket) => {
           position3: null,
           position4: null,
         },
+        gameIsOn: false
       };
 
       console.log("Users in room: " + rooms[roomCode].playerIds);
@@ -48,21 +49,30 @@ io.on("connection", (socket) => {
 
    //Listenerid mängu loogika jaoks paigas
   socket.on("join-room", (roomCode, playerName, playerId) => {
-    if (rooms[roomCode] == true && rooms[roomCode].players.length == 4) {
-      io.to(socket.id).emit("room-error", "Room full (4 players).");
-    } else if (rooms[roomCode]) {
-      rooms[roomCode].players.push(playerName);
-      rooms[roomCode].playerIds.push(playerId);
-      
-      socket.join(roomCode);
-      io.to(roomCode).emit("current-players", rooms[roomCode].players);
-      io.to(roomCode).emit("player-joined", playerName);
-      io.to(roomCode).emit("room-host", rooms[roomCode].host);
-      console.log("Players in room when joining:", rooms[roomCode].players);
-    } else {
+    if (!rooms[roomCode]) {
       io.to(socket.id).emit("room-error", "Room does not exist.");
       return;
     }
+
+    if (rooms[roomCode].players.length == 4) {
+      io.to(socket.id).emit("room-error", "Room full (4 players).");
+      return;
+    }
+
+    if (rooms[roomCode].gameIsOn){
+      io.to(socket.id).emit("room-error", "Game is currently ongoing.");
+      return;
+    }
+
+    rooms[roomCode].players.push(playerName);
+    rooms[roomCode].playerIds.push(playerId);
+    
+    socket.join(roomCode);
+    io.to(roomCode).emit("current-players", rooms[roomCode].players);
+    io.to(roomCode).emit("player-joined", playerName);
+    io.to(roomCode).emit("room-host", rooms[roomCode].host);
+
+    console.log("Players in room when joining:", rooms[roomCode].players);
   });
 
   socket.on("update-room", (roomCode, playerName) => {
@@ -131,6 +141,7 @@ io.on("connection", (socket) => {
     // saada positsioonid lobby'sse
     io.to(roomCode).emit("update-positions", room.positions);
   });
+  
   //-----------
   //Kajastajad mängu loogika jaoks, et clientis muutuks midagi
   //-----------
@@ -140,6 +151,8 @@ io.on("connection", (socket) => {
 
     io.to(roomCode).emit("start-game");
     io.to(roomCode).emit("hide-all-dices"); // peidab koikide diceid
+
+    rooms[roomCode].gameIsOn = true;
 
     // dice generating
     const randomDiceAmounts = [];
@@ -209,19 +222,18 @@ export function handleGameStart(roomCode) {
 }
 
 function handleNewGameSetup(roomCode){
-   
   //Kõikidele mängjatele täringute veeretamine
   rooms[roomCode].dice = handleDiceRolls(rooms[roomCode].dice, rooms[roomCode].isActive);
   //Mängu alguse turni seadmine
   rooms[roomCode].turns = handleTurns(roomCode);
 
   
-//Paneb uued täringud
-io.to(roomCode).emit("generate-dice", 
-   rooms[roomCode].dice, 
-   rooms[roomCode].players, 
-   rooms[roomCode].positions
-);
+  //Paneb uued täringud
+  io.to(roomCode).emit("generate-dice", 
+    rooms[roomCode].dice, 
+    rooms[roomCode].players, 
+    rooms[roomCode].positions
+  );
 
  //dice displaying
  for (let playerNumber = 0; playerNumber < rooms[roomCode].players.length; playerNumber++) {
@@ -379,7 +391,9 @@ export function checkGameOver(roomCode) {
   if (activePlayers === 1) {
      console.log("Game Over!");
      const winnerIndex = rooms[roomCode].isActive.findIndex(isActive => isActive === true);
-     const winner = rooms[roomCode].players[winnerIndex]
+     const winner = rooms[roomCode].players[winnerIndex];
+
+     rooms[roomCode].gameIsOn = false;
      io.to(roomCode).emit("game-over", winner)
   }
 }

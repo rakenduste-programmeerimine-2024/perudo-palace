@@ -71,6 +71,7 @@ const GamePage: React.FC = () => {
    const [activeBidAmount, setActiveBidAmount] = useState(0);
    const [activeBidValue, setActiveBidValue] = useState(1);
    const [winner, setWinner] = useState("");
+
   //#region LISTENERS
 
   // starting
@@ -114,6 +115,7 @@ const GamePage: React.FC = () => {
     ));
 
     socket.on("current-players", (playersList: string[]) => {
+      console.log("Logged players");
       setPlayers(assignPlayerData(playersList));
     });
 
@@ -319,8 +321,8 @@ const GamePage: React.FC = () => {
       setActiveBidValue(newBid.diceValue)
     });
     socket.on("game-over", (winner) => {
-      setWinner(winner)
-      setIsGameOver(true)
+      setWinner(winner);
+      setIsGameOver(true);
     })
     return () => {
       socket.off("update-positions");
@@ -397,11 +399,30 @@ const GamePage: React.FC = () => {
     const orderedPlayers = players
       .filter((player) => order.includes(player.position)) // Filter players with valid positions
       .sort((a, b) => order.indexOf(a.position) - order.indexOf(b.position)); // Sort by position
+      
     console.log("mängjiad enne start: " + players)
     setPlayers(orderedPlayers); // Update players to reflect the playing order
     console.log("mängjiad prst start: " + players)
     setGameStarted(true);
     setIsGameOver(false);
+  };
+
+  // playerid peavad uuesti kohad valima
+  const handleRestartGame = () => {
+    console.log("Restart game...");
+    
+    setIsGameOver(false);
+    setGameStarted(false);
+    setIsTurn(false);
+    setWinner("");
+
+    setPlayers((prevPlayers) =>
+      prevPlayers.map((player) =>
+        player.name === playerName
+          ? { ...player, position: "" }
+          : player
+      )
+    );
   };
 
   const handleLeaveRoom = () => {
@@ -672,7 +693,7 @@ const GamePage: React.FC = () => {
               >
                 {/* GameOverModal komponent */}
                 <GameOverModal
-                  onPlayAgain={handleStartGame}
+                  onPlayAgain={handleRestartGame}
                   onLeaveRoom={handleLeaveRoom}
                   winnerName={`${winner}`} //Võitja nimi
                 />
