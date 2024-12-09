@@ -14,37 +14,33 @@ io.on("connection", (socket) => {
   // RUUMI LOOMINE
   socket.on("create-room", (roomCode, hostName, hostId) => {
     if (rooms[roomCode]) {
-      io.to(socket.id).emit(
-        "room-error",
-        "Room with that code already exists."
-      );
-    } else {
-      //Teeb kõik vajalikud muutjad mängu ja lobby jaoks
-      rooms[roomCode] = { 
-        host: hostName,
-        players: [hostName],
-        playerIds: [hostId],
-        turns: null, 
-        dice: null, 
-        lives: null, 
-        isActive: null,
-        activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
-        positions: {
-          position1: null,
-          position2: null,
-          position3: null,
-          position4: null,
-        },
-        gameIsOn: false
-      };
-
-      console.log("Users in room: " + rooms[roomCode].playerIds);
-
-      socket.join(roomCode);
-      io.to(roomCode).emit("room-created", roomCode);
-      io.to(roomCode).emit("room-host", rooms[roomCode].host);
-      console.log("Players in room when creating:", rooms[roomCode].players);
+      io.to(socket.id).emit("room-error", "Room with that code already exists.");
     }
+    
+      //Teeb kõik vajalikud muutjad mängu ja lobby jaoks
+    rooms[roomCode] = { 
+      host: hostName,
+      players: [hostName],
+      playerIds: [hostId],
+      turns: null, 
+      dice: null, 
+      lives: null, 
+      isActive: null,
+      activeBid: {diceValue: 1, diceAmount: 1, playerIndex: 0 },
+      positions: {
+        position1: null,
+        position2: null,
+        position3: null,
+        position4: null,
+      },
+      gameIsOn: false
+    };
+
+    console.log("Users in room: " + rooms[roomCode].playerIds);
+
+    socket.join(roomCode);
+    io.to(roomCode).emit("room-created", roomCode);
+    io.to(roomCode).emit("room-host", rooms[roomCode].host);
   });
 
    //Listenerid mängu loogika jaoks paigas
@@ -91,22 +87,31 @@ io.on("connection", (socket) => {
   socket.on("leave-room", (roomCode, playerName) => {
     console.log("user " + playerName + " left");
 
-    if (!rooms[roomCode]) { return; }
+    const room = rooms[roomCode];
+
+    if (!room) { return; }
     
     // Kustutab playeri ruumi listist
-    rooms[roomCode].players = rooms[roomCode].players.filter(
+    room.players = room.players.filter(
       (player) => player !== playerName
     );
 
     io.to(roomCode).emit("player-left", playerName);
-    io.to(roomCode).emit("current-players", rooms[roomCode].players);
+    io.to(roomCode).emit("current-players", room.players);
 
     console.log("Kustutasin mängija");
-    console.log("Players in room before deletion:", rooms[roomCode].players);
-    console.log("Player count:", rooms[roomCode].players.length);
+    console.log("Players in room before deletion:", room.players);
+    console.log("Player count:", room.players.length);
+
+    if (playerName == room.host){
+      console.log("Closing room " + roomCode);
+      io.to(roomCode).emit("close-room");
+      delete rooms[roomCode];
+      return;
+    }
 
     // Kui ruum on tühi, kustuta
-    if (rooms[roomCode].players.length == 0) { return; }
+    if (room.players.length > 0) { return; }
     
     delete rooms[roomCode];
     console.log("room " + roomCode + " deleted");
@@ -191,8 +196,6 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("display-current-bid", rooms[roomCode].activeBid); // naitab hetkest bidi
     io.to(roomCode).emit("display-turn", rooms[roomCode].turns, rooms[roomCode].players); // naitab kelle turn hetkel on
   });
-
-  
 
   socket.on("check-bid", ({ response, roomCode }) => {
     io.to(roomCode).emit("display-all-dices"); // naitab koikide inimeste taringuid

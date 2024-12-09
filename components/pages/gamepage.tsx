@@ -134,6 +134,7 @@ const GamePage: React.FC = () => {
           .filter((name) => name !== leftPlayerName);
         return assignPlayerData(updatedPlayers);
       });
+      console.log(players);
     });
 
     socket.on("update-positions", (updatedPositions) => {
@@ -323,7 +324,12 @@ const GamePage: React.FC = () => {
     socket.on("game-over", (winner) => {
       setWinner(winner);
       setIsGameOver(true);
-    })
+    });
+    socket.on("close-room", () => {
+      setPlayers([]);
+      router.push("/");
+    });
+
     return () => {
       socket.off("update-positions");
       socket.off("current-players");
@@ -335,6 +341,7 @@ const GamePage: React.FC = () => {
       socket.off("display-hearts");
       socket.off("display-turn");
       socket.off("display-current-bid");
+      socket.off("close-room");
     };
   }, [roomCode, playerName, router]);
 
@@ -415,14 +422,6 @@ const GamePage: React.FC = () => {
     setGameStarted(false);
     setIsTurn(false);
     setWinner("");
-
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player) =>
-        player.name === playerName
-          ? { ...player, position: "" }
-          : player
-      )
-    );
   };
 
   const handleLeaveRoom = () => {
@@ -509,7 +508,6 @@ const GamePage: React.FC = () => {
               );
             })}
           </div>
-
           {/* Start Game ja Leave nupp */}
           <div className="absolute top-[1rem] left-[7rem]">
             <div className="bg-gray-800 text-white p-4 rounded-lg shadow-lg w-full max-w-xs text-center">
@@ -525,22 +523,32 @@ const GamePage: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => handleStartGame()}
-                sx={{
-                  padding: "1rem 2rem",
-                  fontSize: "1.25rem",
-                  fontWeight: "bold",
-                  backgroundColor: "#4CAF50",
-                  "&:hover": {
-                    backgroundColor: "#45A049",
-                  },
-                }}
-              >
-                START GAME
-              </Button>
+              <>
+                {players.length > 1 ? (   
+                  <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleStartGame()}
+                  sx={{
+                    padding: "1rem 2rem",
+                    fontSize: "1.25rem",
+                    fontWeight: "bold",
+                    backgroundColor: "#4CAF50",
+                    "&:hover": {
+                      backgroundColor: "#45A049",
+                    },
+                  }}>
+                  START GAME
+                  </Button>
+                ) : (
+                  <div className="bg-yellow-600 text-white p-4 rounded-md shadow-lg flex items-center space-x-3">
+                    <span className="font-semibold">⏳</span>
+                    <p className="text-lg font-semibold">
+                      Waiting for the host to start the game...
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             <Button
@@ -638,8 +646,7 @@ const GamePage: React.FC = () => {
               </div>
             ))}
           </div>
-          
-              {/* Your Turn indikaator */}
+          {/* Your Turn indikaator */}
           {isTurn && (
             <div className="absolute top-10 right-12 flex flex-col items-center">
               {/* Tekst */}
